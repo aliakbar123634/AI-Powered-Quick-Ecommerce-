@@ -1,9 +1,10 @@
-from . models import Category , Product
+from . models import Category , Product , Wishlist
 from rest_framework import serializers
 from django.db.models import Avg
 from decimal import Decimal
 from .models import ProductImage
 from .models import Review
+
 
 class CategorySerializer(serializers.ModelSerializer):
     products_count = serializers.SerializerMethodField()
@@ -93,3 +94,52 @@ class ProductSerializer(serializers.ModelSerializer):
         return data
 
        
+
+
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+
+    product_name = serializers.CharField(
+        source="product.name",
+        read_only=True
+    )
+
+    product_image = serializers.ImageField(
+        source="product.image",
+        read_only=True
+    )
+
+    product_price = serializers.DecimalField(
+        source="product.price",
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+
+    product_discount_price = serializers.DecimalField(
+        source="product.discount_price",
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+
+    class Meta:
+        model = Wishlist
+
+        fields = [
+            "id",
+            "user",
+            "product",
+            "product_name",
+            "product_image",
+            "product_price",
+            "product_discount_price",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "user",
+            "created_at",
+        ]       

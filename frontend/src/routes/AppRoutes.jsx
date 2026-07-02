@@ -14,6 +14,7 @@ import CheckOut from "../pages/CheckOut";
 import OrderSuccess from "../pages/OrderSuccess";
 import Profile from "../pages/Profile";
 import EditProfile from "../pages/EditProfile";
+import Wishlist from "../pages/Wishlist";
 
 const AppRoutes=()=>{
     return (
@@ -32,6 +33,7 @@ const AppRoutes=()=>{
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/edit" element={<EditProfile />} />
+                <Route path="/wishlist" element={<Wishlist />} />
                 {/* <Route element={<ProtectedRoute />}>
                     <Route path="/cart" element={<Cart />} />
                 </Route> */}

@@ -3,7 +3,6 @@ import Navbar from "../components/Navbar";
 import EditProfileBreadcrumb from "../components/EditProfileBreadcrumb"
 import EditProfileHeader from "../components/EditProfileHeader";
 import EditProfileForm from "../components/EditProfileForm";
-import EditProfileActions from "../components/EditProfileActions";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -117,8 +116,6 @@ const handleSubmit = async (e) => {
       <EditProfileBreadcrumb/>
       <EditProfileHeader/>
       <EditProfileForm formData={formData}  handleChange={handleChange}  handleSubmit={handleSubmit} handleCancel={handleCancel} loading={loading}/>
-
-      <div>EditProfile</div>
     </>
   )
 }

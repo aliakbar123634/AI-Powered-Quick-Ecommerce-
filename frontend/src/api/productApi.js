@@ -21,3 +21,20 @@ export const getProducts = (  page = 1,search = "",ordering = "" ,  category = "
 
 export const getProductById = (id) =>
   API.get(`products/products/${id}/`);
+
+
+
+
+// Get All Wishlist Products
+export const getWishlist = () =>
+  API.get("/products/wishlist/");
+
+// Add Product To Wishlist
+export const addToWishlist = (data) =>
+  API.post("/products/wishlist/add/", data);
+
+// Remove Product From Wishlist
+export const removeFromWishlist = (data) =>
+  API.delete("/products/wishlist/remove/", {
+    data: data,
+  });
