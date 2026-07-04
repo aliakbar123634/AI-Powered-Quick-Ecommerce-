@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from accounts.utils import distance
 from . models import Cart , CartItem , Order , OrderItem
 from . serializers import CartSerializer , CartItemSerializer  , AddToCartSerializer , OrderItemSerializers , OrderSerializer
 from rest_framework.decorators import action
@@ -12,6 +13,7 @@ from rest_framework import status
 from django.db import transaction
 from accounts.models import Address
 from decimal import Decimal
+from accounts.utils.distance import calculate_distance
 # Create your views here.
 
 @extend_schema(
@@ -151,98 +153,393 @@ class CartItemViewSet(viewsets.ModelViewSet):
     description="Order operations"
     
 )
+# class OrderViewSet(viewsets.ModelViewSet):
+#     queryset = Order.objects.all()
+#     serializer_class=OrderSerializer
+#     permission_classes = [IsAuthenticated] 
+#     def get_queryset(self):
+
+#        return Order.objects.filter(
+#             user=self.request.user
+#     )
+#     @action(detail=False, methods=['post'], url_path='create')
+#     def create_order(self , request):
+#         # print("=" * 50)
+#         # print("CREATE ORDER API HIT")
+#         # print("=" * 50)
+#         user=request.user
+#         address_id = request.data.get("address")
+#         try:
+#             cart = Cart.objects.get(user=user)
+#         except Cart.DoesNotExist:
+#             return Response(
+#                 {"error": "Cart not found"},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+#         if not cart.items.exists():
+#            return Response(
+#               {"error": "Cart is empty"},
+#               status=status.HTTP_400_BAD_REQUEST
+#             )
+#         try:
+#             address = Address.objects.get(
+#             id=address_id,
+#             user=user
+#             )
+#         except Address.DoesNotExist:
+#             return Response(
+#         {"error": "Invalid address"},
+#         status=status.HTTP_404_NOT_FOUND
+#         )
+#         STORE_LATITUDE = 29.395600
+#         STORE_LONGITUDE = 71.683600
+
+#         MAX_DISTANCE = 10
+
+
+#         distance = calculate_distance(
+
+#             STORE_LATITUDE,
+
+#             STORE_LONGITUDE,
+
+#             address.latitude,
+
+#             address.longitude
+
+#         )
+#         if distance > MAX_DISTANCE:
+
+#             return Response(
+#                 {
+#                 "error":
+#                 "Sorry delivery is not available in your area",
+
+#                 "distance_km":
+#                 distance
+#             },
+#             status=status.HTTP_400_BAD_REQUEST
+#             )
+#         with transaction.atomic():
+#             # print("Using Price:", product_price)
+#             order=Order.objects.create(            
+#                 user=user,
+#                 address=address,
+#                 # address snapshot
+#                 delivery_address=address.formatted_address,
+
+#                 delivery_city=address.city,
+
+#                 delivery_state=address.state,
+
+#                 delivery_country=address.country,
+
+#                 delivery_postal_code=address.postal_code,
+
+#                 delivery_latitude=address.latitude,
+
+#                 delivery_longitude=address.longitude,
+#                 total_price=0,
+#                 delivery_fee=0,
+#                 discount=0,
+#                 subtotal=0
+#                 )
+#             total_price=0
+#             delivery_fee=0
+#             discount=0
+#             subtotal=0
+#             if distance <= 3:
+#                delivery_fee = Decimal("100")
+#             elif distance <= 7:
+#                delivery_fee = Decimal("200")
+#             else:
+#                 delivery_fee = Decimal("300")
+#             for item in cart.items.all():
+#                 # Agar discount_price hai to wahi use karo
+#                 product_price = (
+#                     item.product.discount_price
+#                     if item.product.discount_price is not None
+#                     else item.product.price
+#                      )
+#                 print("Original Price:", item.product.price)
+#                 print("Discount Price:", item.product.discount_price)
+#                 print("Using Price:", product_price)    
+#                 OrderItem.objects.create(
+#                 order=order,
+#                 product=item.product,
+#                 quantity=item.quantity,
+#                 price=product_price
+#                 )
+#             subtotal += product_price * item.quantity
+#                 # delivery_fee = product_price * Decimal("0.05")
+#             discount=product_price * Decimal("0.03")
+#             total_price=(subtotal-discount)+delivery_fee
+#             order.total_price = total_price
+#             order.discount=discount
+#             order.delivery_fee=delivery_fee
+#             order.subtotal=subtotal
+#             order.save()
+#             cart.items.all().delete()
+#         serializer=OrderSerializer(order)
+#         return Response(
+#             serializer.data,
+#             status=status.HTTP_201_CREATED
+#         )    
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset=Order.objects.all()
-    serializer_class=OrderSerializer
-    permission_classes = [IsAuthenticated] 
+
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get_queryset(self):
+
+        return Order.objects.filter(
+            user=self.request.user
+        )
+
+
+
     @action(detail=False, methods=['post'], url_path='create')
-    def create_order(self , request):
-        print("=" * 50)
-        print("CREATE ORDER API HIT")
-        print("=" * 50)
-        user=request.user
+    def create_order(self, request):
+
+
+        user = request.user
+
         address_id = request.data.get("address")
+
+
         try:
-            cart = Cart.objects.get(user=user)
+
+            cart = Cart.objects.get(
+                user=user
+            )
+
         except Cart.DoesNotExist:
+
             return Response(
                 {"error": "Cart not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+
         if not cart.items.exists():
-           return Response(
-              {"error": "Cart is empty"},
-              status=status.HTTP_400_BAD_REQUEST
-            )
-        try:
-            address = Address.objects.get(
-            id=address_id,
-            user=user
-            )
-        except Address.DoesNotExist:
+
             return Response(
-        {"error": "Invalid address"},
-        status=status.HTTP_404_NOT_FOUND
-    )
+                {"error": "Cart is empty"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+
+        try:
+
+            address = Address.objects.get(
+                id=address_id,
+                user=user
+            )
+
+        except Address.DoesNotExist:
+
+            return Response(
+                {"error": "Invalid address"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+
+        STORE_LATITUDE = 29.395600
+
+        STORE_LONGITUDE = 71.683600
+
+
+        MAX_DISTANCE = 10
+
+
+
+        distance = calculate_distance(
+
+            STORE_LATITUDE,
+
+            STORE_LONGITUDE,
+
+            address.latitude,
+
+            address.longitude
+
+        )
+
+
+
+        if distance > MAX_DISTANCE:
+
+            return Response(
+
+                {
+
+                    "error":
+                    "Sorry delivery is not available in your area",
+
+                    "distance_km": distance
+
+                },
+
+                status=status.HTTP_400_BAD_REQUEST
+
+            )
+
+
+
         with transaction.atomic():
-            print("Using Price:", product_price)
-            order=Order.objects.create(            
+
+
+            order = Order.objects.create(
+
                 user=user,
+
                 address=address,
+
+
+                # address snapshot
+
+                delivery_address=address.formatted_address,
+
+                delivery_city=address.city,
+
+                delivery_state=address.state,
+
+                delivery_country=address.country,
+
+                delivery_postal_code=address.postal_code,
+
+                delivery_latitude=address.latitude,
+
+                delivery_longitude=address.longitude,
+
+
                 total_price=0,
+
                 delivery_fee=0,
+
                 discount=0,
+
                 subtotal=0
-                )
-            total_price=0
-            delivery_fee=0
-            discount=0
-            subtotal=0
+
+            )
+
+
+
+            subtotal = Decimal("0")
+
+
+            # distance based delivery
+
+            if distance <= 3:
+
+                delivery_fee = Decimal("100")
+
+            elif distance <= 7:
+
+                delivery_fee = Decimal("200")
+
+            else:
+
+                delivery_fee = Decimal("300")
+
+
+
             for item in cart.items.all():
-                # Agar discount_price hai to wahi use karo
+
+
                 product_price = (
+
                     item.product.discount_price
+
                     if item.product.discount_price is not None
+
                     else item.product.price
-                     )
-                print("Original Price:", item.product.price)
-                print("Discount Price:", item.product.discount_price)
-                print("Using Price:", product_price)    
-                OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
-                price=product_price
+
                 )
+
+
+                OrderItem.objects.create(
+
+                    order=order,
+
+                    product=item.product,
+
+                    quantity=item.quantity,
+
+                    price=product_price
+
+                )
+
+
                 subtotal += product_price * item.quantity
-                delivery_fee = product_price * Decimal("0.05")
-                discount=product_price * Decimal("0.03")
-                total_price=(subtotal-discount)+delivery_fee
+
+
+
+            discount = subtotal * Decimal("0")
+
+
+            total_price = (
+
+                subtotal
+
+                -
+
+                discount
+
+                +
+
+                delivery_fee
+
+            )
+
+
+
+            order.subtotal = subtotal
+
+            order.discount = discount
+
+            order.delivery_fee = delivery_fee
+
             order.total_price = total_price
-            order.discount=discount
-            order.delivery_fee=delivery_fee
-            order.subtotal=subtotal
+
+
             order.save()
+
+
+
             cart.items.all().delete()
-        serializer=OrderSerializer(order)
+
+
+
+        serializer = OrderSerializer(order)
+
+
         return Response(
+
             serializer.data,
+
             status=status.HTTP_201_CREATED
-        )        
+
+        )    
     @action(detail=True, methods=['patch'], url_path='cancel')
     def cancel_order(self , request , pk=None):
         try:
-            order_of_id=Order.objects.get(id=pk)
+            order_of_id=Order.objects.get(id=pk , user=request.user)
         except Order.DoesNotExist:
             return Response(
                 {"error": "Order not found"},
                 status=status.HTTP_404_NOT_FOUND
             ) 
-        if order_of_id.user != request.user:
-            return Response(
-        {"error": "You are not allowed to cancel this order"},
-        status=status.HTTP_403_FORBIDDEN
-       ) 
+    #     if order_of_id.user != request.user:
+    #         return Response(
+    #     {"error": "You are not allowed to cancel this order"},
+    #     status=status.HTTP_403_FORBIDDEN
+    #    ) 
         if order_of_id.status == "CANCELLED":
             return Response(
         {"error": "Order already cancelled"},

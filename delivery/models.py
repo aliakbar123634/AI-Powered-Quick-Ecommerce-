@@ -23,3 +23,8 @@ class DeliveryTracking(models.Model):
     )
 
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+
+#    python manage.py makemigrations delivery
+#    python manage.py migrate

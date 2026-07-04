@@ -1,121 +1,208 @@
-import React from "react";
 
-const CheckoutAddress = () => {
+import { useNavigate } from "react-router-dom";
+
+const CheckoutAddress = ({
+  addresses,
+  selectedAddress,
+  setSelectedAddress,
+}) => {
+
+  const navigate = useNavigate();
+
+
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 mb-8">
 
-      <h2 className="text-2xl font-bold mb-6">
-        Shipping Address
-      </h2>
+    <div
+      className="
+        bg-white
+        rounded-xl
+        shadow
+        p-6
+        mb-6
+      "
+    >
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="flex justify-between items-center mb-5">
 
-        {/* Full Name */}
+        <h2 className="text-xl font-bold">
+          Delivery Address
+        </h2>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Full Name
-          </label>
 
-          <input
-            type="text"
-            placeholder="John Doe"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
+        <button
 
-        {/* Email */}
+          onClick={() => navigate("/location")}
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Email
-          </label>
+          className="
+            bg-blue-600
+            text-white
+            px-4
+            py-2
+            rounded-lg
+          "
 
-          <input
-            type="email"
-            placeholder="john@example.com"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
+        >
 
-        {/* Phone */}
+          Add Address
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Phone Number
-          </label>
+        </button>
 
-          <input
-            type="text"
-            placeholder="+92 300 1234567"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
-
-        {/* City */}
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            City
-          </label>
-
-          <input
-            type="text"
-            placeholder="Lahore"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
 
       </div>
 
-      {/* Address */}
 
-      <div className="mt-6">
+      {
+        addresses.length === 0 ? (
 
-        <label className="block text-sm font-medium mb-2">
-          Street Address
-        </label>
+          <p className="text-gray-500">
 
-        <textarea
-          rows={4}
-          placeholder="House No, Street, Area..."
-          className="w-full border rounded-xl px-4 py-3 outline-none resize-none focus:ring-2 focus:ring-green-500"
-        />
+            No address found. Add your address.
 
-      </div>
+          </p>
 
-      {/* Postal + Country */}
 
-      <div className="grid md:grid-cols-2 gap-6 mt-6">
+        ) : (
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Postal Code
-          </label>
 
-          <input
-            type="text"
-            placeholder="54000"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
+          <div className="space-y-4">
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Country
-          </label>
 
-          <input
-            type="text"
-            placeholder="Pakistan"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
+            {
 
-      </div>
+
+              addresses.map((address) => (
+
+
+                <div
+
+                  key={address.id}
+
+
+                  onClick={() =>
+                    setSelectedAddress(address)
+                  }
+
+
+                  className={`
+                    
+                    border
+                    rounded-xl
+                    p-4
+                    cursor-pointer
+
+                    ${
+                      selectedAddress?.id === address.id
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-300"
+                    }
+
+                  `}
+
+                >
+
+
+                  <div className="flex gap-3">
+
+
+                    <input
+
+                      type="radio"
+
+                      checked={
+                        selectedAddress?.id === address.id
+                      }
+
+                      onChange={() =>
+                        setSelectedAddress(address)
+                      }
+
+                    />
+
+
+                    <div>
+
+
+                      <div className="flex gap-3 items-center">
+
+
+                        <h3 className="font-bold">
+
+                          {address.label}
+
+                        </h3>
+
+
+                        {
+                          address.is_default && (
+
+                            <span
+                              className="
+                                text-xs
+                                bg-green-100
+                                text-green-700
+                                px-2
+                                py-1
+                                rounded
+                              "
+                            >
+
+                              Default
+
+                            </span>
+
+                          )
+                        }
+
+
+                      </div>
+
+
+
+                      <p className="text-gray-600 mt-2">
+
+                        {address.formatted_address}
+
+                      </p>
+
+
+
+                      <p className="text-sm text-gray-500 mt-1">
+
+                        {address.city},
+                        {" "}
+                        {address.state},
+                        {" "}
+                        {address.country}
+
+                      </p>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              ))
+
+            }
+
+
+          </div>
+
+
+        )
+      }
+
 
     </div>
+
   );
+
 };
+
 
 export default CheckoutAddress;

@@ -5,21 +5,27 @@ import CheckoutBreadcrumb from "../components/CheckoutBreadcrumb";
 import CheckoutAddress from "../components/CheckoutAddress";
 import PaymentMethod from "../components/PaymentMethod";
 import CheckoutSummary from "../components/CheckoutSummary";
-import { allCart, createOrder } from "../api/orderApi";
+import { allCart, createOrder , getAddresses} from "../api/orderApi";
 
 const Checkout = () => {
 
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const navigate = useNavigate();
   const handleCreateOrder = async () => {
   try {
-    const response = await createOrder({address: 1});
+    const response = await createOrder({address: selectedAddress.id});
     
 
     console.log(response.data);
 
-    navigate("/order-success");
+    navigate("/order-success", {
+    state: {
+        order: response.data
+      }
+    });
   } catch (error) {
         if (error.response) {
       alert(error.response.data.error);
@@ -37,6 +43,20 @@ const Checkout = () => {
       try {
         const response = await allCart();
         setCart(response.data.results[0]);
+        const addressResponse = await getAddresses();
+
+      setAddresses(addressResponse.data.results);
+
+
+      const defaultAddress =
+        addressResponse.data.results.find(
+          (item) => item.is_default
+        );
+
+
+      setSelectedAddress(
+        defaultAddress || addressResponse.data.results[0]
+      );
       } catch (error) {
         console.log(error);
       } finally {
@@ -64,7 +84,7 @@ const Checkout = () => {
 
           <div className="lg:col-span-8">
 
-            <CheckoutAddress />
+            <CheckoutAddress addresses={addresses} selectedAddress={selectedAddress} setSelectedAddress={setSelectedAddress} />
 
             <PaymentMethod />
 

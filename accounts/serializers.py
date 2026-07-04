@@ -30,22 +30,11 @@ class LoginSerializer(serializers.Serializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = [
-            "id",
-            "title",
-            "city",
-            "area",
-            "street",
-            "formatted_address",
-            "latitude",
-            "longitude",
-            "is_default",
-            "created_at",
-            "updated_at",
-        ]
+        fields="__all__"
 
         read_only_fields = [
             "id",
+            "user",
             "created_at",
             "updated_at",
         ]
@@ -82,3 +71,16 @@ class ProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "addresses",
         ]
+
+
+class DeliveryCheckSerializer(serializers.Serializer):
+
+    latitude = serializers.DecimalField(
+        max_digits=9,
+        decimal_places=6
+    )
+
+    longitude = serializers.DecimalField(
+        max_digits=9,
+        decimal_places=6
+    )

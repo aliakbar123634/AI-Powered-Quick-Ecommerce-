@@ -132,44 +132,154 @@ class OrderItemSerializers(serializers.ModelSerializer):
 
 
 
+# class OrderSerializer(serializers.ModelSerializer):
+#     total_items = serializers.SerializerMethodField()
+#     items = OrderItemSerializers(many=True, read_only=True)
+
+#     class Meta:
+#         model = Order
+#         fields = [
+#             "id",
+#             "user",
+#             "Warehouse",
+#             "rider",
+#             "address",
+#             "order_number",
+#             "items",
+#             "total_items",
+#             "status",
+#             "subtotal",
+#             "delivery_fee",
+#             "discount",
+#             "total_price",
+#             "created_at",
+#         ]
+
+#         read_only_fields = [
+#             "id",
+#             "user",
+#             "order_number",
+#             "status",
+#             "subtotal",
+#             "delivery_fee",
+#             "discount",
+#             "total_price",
+#             "created_at",
+#         ]
+
+#     def get_total_items(self, obj):
+#         return sum(item.quantity for item in obj.items.all())        
+
 class OrderSerializer(serializers.ModelSerializer):
+
     total_items = serializers.SerializerMethodField()
-    items = OrderItemSerializers(many=True, read_only=True)
+
+    items = OrderItemSerializers(
+        many=True,
+        read_only=True
+    )
+
 
     class Meta:
+
         model = Order
+
         fields = [
+
             "id",
+
             "user",
+
             "Warehouse",
+
             "rider",
+
             "address",
+
+
+            # snapshot fields
+            "delivery_address",
+
+            "delivery_city",
+
+            "delivery_state",
+
+            "delivery_country",
+
+            "delivery_postal_code",
+
+            "delivery_latitude",
+
+            "delivery_longitude",
+
+
             "order_number",
+
             "items",
+
             "total_items",
+
             "status",
+
             "subtotal",
+
             "delivery_fee",
+
             "discount",
+
             "total_price",
+
             "created_at",
+
         ]
+
 
         read_only_fields = [
+
             "id",
+
             "user",
+
+
+            # ye backend fill karega
+            "delivery_address",
+
+            "delivery_city",
+
+            "delivery_state",
+
+            "delivery_country",
+
+            "delivery_postal_code",
+
+            "delivery_latitude",
+
+            "delivery_longitude",
+
+
             "order_number",
+
             "status",
+
             "subtotal",
+
             "delivery_fee",
+
             "discount",
+
             "total_price",
+
             "created_at",
+
         ]
 
+
+
     def get_total_items(self, obj):
-        return sum(item.quantity for item in obj.items.all())        
 
-
+        return sum(
+            item.quantity
+            for item in obj.items.all()
+        )
 
 #         python manage.py runserver

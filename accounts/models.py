@@ -62,7 +62,22 @@ class Address(models.Model):
     area = models.CharField(max_length=100)
 
     street = models.TextField()
+    country = models.CharField(
+    max_length=100
+    )
 
+    state = models.CharField(
+    max_length=100
+    )
+
+    postal_code = models.CharField(
+    max_length=20,
+    blank=True
+    )
+    label = models.CharField(
+    max_length=30,
+    default="Home"
+    )
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6

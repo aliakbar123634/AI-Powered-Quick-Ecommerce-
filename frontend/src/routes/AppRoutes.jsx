@@ -15,6 +15,7 @@ import OrderSuccess from "../pages/OrderSuccess";
 import Profile from "../pages/Profile";
 import EditProfile from "../pages/EditProfile";
 import Wishlist from "../pages/Wishlist";
+import Location from "../pages/Location";
 
 const AppRoutes=()=>{
     return (
@@ -34,6 +35,7 @@ const AppRoutes=()=>{
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/edit" element={<EditProfile />} />
                 <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/location" element={<Location />} />
                 {/* <Route element={<ProtectedRoute />}>
                     <Route path="/cart" element={<Cart />} />
                 </Route> */}

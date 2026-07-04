@@ -68,45 +68,94 @@ const OrderDetail = () => {
   if (!order) return <h2>Order Not Found</h2>;
 
   return (
-    <>
+//     <>
+//   <Navbar />
+
+//   <OrderDetailBreadcrumb />
+
+//   <div className="max-w-7xl mx-auto px-6 py-10">
+
+//     {/* Order Information */}
+//     <OrderInfo order={order} />
+
+//     <div className="grid lg:grid-cols-12 gap-8 mt-8">
+
+//       {/* Left Side */}
+//       <div className="lg:col-span-8">
+
+//         <OrderItems items={order.items} />
+
+//       </div>
+
+//       {/* Right Side */}
+//       <div className="lg:col-span-4">
+
+//         <OrderSummary order={order} />
+
+//       </div>
+
+//     </div>
+//     <div className="lg:col-span-4">
+
+//     <OrderSummary order={order} />
+
+//     <OrderActions
+//         order={order}
+//         onCancelOrder={handleCancelOrder}
+//     />
+
+// </div>
+
+//   </div>
+// </>
+
+<>
   <Navbar />
 
   <OrderDetailBreadcrumb />
 
+
   <div className="max-w-7xl mx-auto px-6 py-10">
 
-    {/* Order Information */}
+
     <OrderInfo order={order} />
+
 
     <div className="grid lg:grid-cols-12 gap-8 mt-8">
 
-      {/* Left Side */}
+
       <div className="lg:col-span-8">
 
-        <OrderItems items={order.items} />
+        <OrderItems 
+          items={order.items} 
+        />
 
       </div>
 
-      {/* Right Side */}
+
+
       <div className="lg:col-span-4">
 
-        <OrderSummary order={order} />
+
+        <OrderSummary 
+          order={order} 
+        />
+
+
+        <OrderActions
+          order={order}
+          onCancelOrder={handleCancelOrder}
+        />
+
 
       </div>
 
+
     </div>
-    <div className="lg:col-span-4">
 
-    <OrderSummary order={order} />
-
-    <OrderActions
-        order={order}
-        onCancelOrder={handleCancelOrder}
-    />
-
-</div>
 
   </div>
+
 </>
 
 

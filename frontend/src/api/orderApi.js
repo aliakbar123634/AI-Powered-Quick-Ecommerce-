@@ -25,3 +25,7 @@ export const getOrderDetail = (id) =>
 
 export const cancelOrder = (id) =>
   API.patch(`orders/order/${id}/cancel/`);
+
+
+export const getAddresses = () =>
+  API.get("accounts/addresses/");
