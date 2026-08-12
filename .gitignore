@@ -1,0 +1,33 @@
+@"
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+*/venv/
+
+# Environment variables
+.env
+.env.*
+
+# Node
+node_modules/
+*/node_modules/
+
+# Vite
+.vite/
+*/.vite/
+dist/
+*/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+"@ | Set-Content .gitignore
