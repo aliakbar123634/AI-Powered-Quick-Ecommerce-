@@ -1,10 +1,11 @@
 from django.db import models
-from accounts.models import CustomUserModel , RiderProfile , Address
+from accounts.models import CustomUserModel, RiderProfile, Address
 from products.models import Product
 from inventory.models import Warehouse
 import uuid
 
 # Create your models here.
+
 
 class Cart(models.Model):
     user = models.OneToOneField(
@@ -18,7 +19,8 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Cart - {self.user.username}"
-    
+
+
 class CartItem(models.Model):
     cart = models.ForeignKey(
         Cart,
@@ -37,8 +39,8 @@ class CartItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.product.name} ({self.quantity})"    
-    
+        return f"{self.product.name} ({self.quantity})"
+
 
 class Order(models.Model):
 
@@ -51,38 +53,44 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(
-        CustomUserModel, 
+        CustomUserModel,
         on_delete=models.CASCADE,
         related_name="orders"
     )
-    Warehouse=models.ForeignKey(
+
+    Warehouse = models.ForeignKey(
         Warehouse,
         on_delete=models.CASCADE,
-        related_name="orders" ,
+        related_name="orders",
         null=True,
-        blank=True       
+        blank=True
     )
-    rider=models.ForeignKey(
+
+    rider = models.ForeignKey(
         RiderProfile,
         on_delete=models.CASCADE,
-        related_name="orders" ,  
+        related_name="orders",
         null=True,
-        blank=True     
+        blank=True
     )
+
     address = models.ForeignKey(
         Address,
         on_delete=models.SET_NULL,
         null=True
     )
+
     order_number = models.CharField(
         max_length=100,
         unique=True
     )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default="PENDING"
     )
+
     subtotal = models.DecimalField(
         max_digits=10,
         decimal_places=2
@@ -99,53 +107,50 @@ class Order(models.Model):
         decimal_places=2,
         default=0
     )
-  
+
     total_price = models.DecimalField(
         max_digits=18,
         decimal_places=2
     )
+
     delivery_address = models.TextField(
-    blank=True
-)
+        blank=True
+    )
 
     delivery_city = models.CharField(
-    max_length=100,
-    blank=True
-)
-
+        max_length=100,
+        blank=True
+    )
 
     delivery_state = models.CharField(
-    max_length=100,
-    blank=True
-)
-
+        max_length=100,
+        blank=True
+    )
 
     delivery_country = models.CharField(
-    max_length=100,
-    blank=True
-)
-
+        max_length=100,
+        blank=True
+    )
 
     delivery_postal_code = models.CharField(
-    max_length=20,
-    blank=True
-)
-
+        max_length=20,
+        blank=True
+    )
 
     delivery_latitude = models.DecimalField(
-    max_digits=9,
-    decimal_places=6,
-    null=True,
-    blank=True
-)
-
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
 
     delivery_longitude = models.DecimalField(
-    max_digits=9,
-    decimal_places=6,
-    null=True,
-    blank=True
-)
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -182,8 +187,6 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
-    
-
 
 
 class Payment(models.Model):
@@ -201,7 +204,8 @@ class Payment(models.Model):
 
     order = models.OneToOneField(
         Order,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="payment"
     )
 
     amount = models.DecimalField(
@@ -226,8 +230,22 @@ class Payment(models.Model):
         null=True
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)    
+    currency = models.CharField(
+        max_length=10,
+        default="USD"
+    )
+
+    stripe_session_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)   
     
+
+#    python manage.py makemigrations orders
+#    python manage.py migrate orders
 
 #    python manage.py makemigrations orders
 #    python manage.py migrate orders

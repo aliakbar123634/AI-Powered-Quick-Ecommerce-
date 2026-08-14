@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 from products.models import Product
 
 
@@ -11,6 +11,9 @@ class Warehouse(models.Model):
 
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    service_radius_km = models.PositiveIntegerField(
+        default=10
+    )
 
     is_active = models.BooleanField(default=True)
 
@@ -21,12 +24,14 @@ class Warehouse(models.Model):
 class Inventory(models.Model):
     warehouse = models.ForeignKey(
         Warehouse,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="inventory"
     )
 
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="warehouse_stock"
     )
 
     quantity = models.PositiveIntegerField(default=0)
@@ -38,7 +43,9 @@ class Inventory(models.Model):
     class Meta:
         unique_together = ("warehouse", "product")
 
+    def __str__(self):
 
+        return f"{self.product.name} - {self.warehouse.name}"
 
 
 
