@@ -14,6 +14,21 @@ from django.db import transaction
 from accounts.models import Address
 from decimal import Decimal
 from accounts.utils.distance import calculate_distance
+
+import stripe
+
+from django.conf import settings
+from django.http import HttpResponse
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import Order, Payment
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 # Create your views here.
 
 @extend_schema(
@@ -560,7 +575,313 @@ class OrderViewSet(viewsets.ModelViewSet):
 class OrderItemsViewSet(viewsets.ModelViewSet):
     queryset=OrderItem.objects.all()  
     serializer_class=OrderItemSerializers
-    permission_classes = [IsAuthenticated]         
+    permission_classes = [IsAuthenticated]   
+
+
+
+
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_payment(request):
+    """
+    Create a payment record for an existing order.
+    """
+
+    order_id = request.data.get("order_id")
+    payment_method = request.data.get("payment_method")
+
+    if not order_id:
+        return Response(
+            {"error": "order_id is required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not payment_method:
+        return Response(
+            {"error": "payment_method is required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        order = Order.objects.get(
+            id=order_id,
+            user=request.user
+        )
+    except Order.DoesNotExist:
+        return Response(
+            {"error": "Order not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Prevent duplicate payment records
+    payment, created = Payment.objects.get_or_create(
+        order=order,
+        defaults={
+            "amount": order.total_price,
+            "payment_method": payment_method,
+            "payment_status": Payment.Status.PENDING,
+        }
+    )
+
+    # If payment already exists, update method if still pending
+    if not created and payment.payment_status == Payment.Status.PENDING:
+        payment.payment_method = payment_method
+        payment.amount = order.total_price
+        payment.save(
+            update_fields=[
+                "payment_method",
+                "amount",
+            ]
+        )
+
+    return Response(
+        {
+            "id": payment.id,
+            "order_id": order.id,
+            "amount": str(payment.amount),
+            "payment_method": payment.payment_method,
+            "payment_status": payment.payment_status,
+        },
+        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def stripe_checkout(request, payment_id):
+    """
+    Create Stripe Checkout Session for a payment.
+    """
+
+    try:
+        payment = Payment.objects.select_related("order").get(
+            id=payment_id,
+            order__user=request.user
+        )
+    except Payment.DoesNotExist:
+        return Response(
+            {"error": "Payment not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    if payment.payment_method != Payment.Method.STRIPE:
+        return Response(
+            {"error": "This payment is not a Stripe payment."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if payment.payment_status == Payment.Status.PAID:
+        return Response(
+            {"error": "Payment has already been completed."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+
+        # Reuse existing Stripe session if available
+        if payment.stripe_session_id:
+
+            try:
+                existing_session = stripe.checkout.Session.retrieve(
+                    payment.stripe_session_id
+                )
+
+                if existing_session.status == "open":
+                    return Response(
+                        {
+                            "checkout_url": existing_session.url
+                        },
+                        status=status.HTTP_200_OK
+                    )
+
+            except stripe.error.StripeError:
+                pass
+
+        session = stripe.checkout.Session.create(
+
+            payment_method_types=["card"],
+
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": payment.currency.lower(),
+
+                        "product_data": {
+                            "name": f"Order {payment.order.order_number}",
+                        },
+
+                        "unit_amount": int(
+                            payment.amount * 100
+                        ),
+                    },
+
+                    "quantity": 1,
+                }
+            ],
+
+            mode="payment",
+
+            success_url=(
+                "http://localhost:5174/order-success"
+                "?session_id={CHECKOUT_SESSION_ID}"
+            ),
+
+            cancel_url=(
+                "http://localhost:5174/payment"
+            ),
+
+            metadata={
+                "payment_id": str(payment.id),
+                "order_id": str(payment.order.id),
+            },
+        )
+
+        payment.stripe_session_id = session.id
+        payment.save(update_fields=["stripe_session_id"])
+
+        return Response(
+            {
+                "checkout_url": session.url,
+                "session_id": session.id,
+            },
+            status=status.HTTP_200_OK
+        )
+
+    except stripe.error.StripeError as e:
+
+        return Response(
+            {
+                "error": str(e)
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(["POST"])
+@permission_classes([])
+def stripe_webhook(request):
+    """
+    Stripe webhook endpoint.
+    """
+
+    payload = request.body
+
+    sig_header = request.META.get(
+        "HTTP_STRIPE_SIGNATURE"
+    )
+
+    webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try:
+
+        event = stripe.Webhook.construct_event(
+            payload,
+            sig_header,
+            webhook_secret
+        )
+
+    except ValueError:
+
+        return HttpResponse(
+            "Invalid payload",
+            status=400
+        )
+
+    except stripe.error.SignatureVerificationError:
+
+        return HttpResponse(
+            "Invalid signature",
+            status=400
+        )
+
+    # Payment completed
+    if event["type"] == "checkout.session.completed":
+
+        session = event["data"]["object"]
+
+        payment_id = session.get("metadata", {}).get(
+            "payment_id"
+        )
+
+        order_id = session.get("metadata", {}).get(
+            "order_id"
+        )
+
+        if payment_id:
+
+            try:
+
+                payment = Payment.objects.get(
+                    id=payment_id
+                )
+
+                payment.payment_status = Payment.Status.PAID
+
+                payment.transaction_id = session.get(
+                    "payment_intent"
+                )
+
+                payment.save(
+                    update_fields=[
+                        "payment_status",
+                        "transaction_id",
+                    ]
+                )
+
+                # Confirm order after successful Stripe payment
+                if order_id:
+
+                    try:
+
+                        order = Order.objects.get(
+                            id=order_id
+                        )
+
+                        if order.status == "PENDING":
+                            order.status = "CONFIRMED"
+                            order.save(
+                                update_fields=["status"]
+                            )
+
+                    except Order.DoesNotExist:
+                        pass
+
+            except Payment.DoesNotExist:
+                pass
+
+    # Payment failed
+    elif event["type"] == "checkout.session.async_payment_failed":
+
+        session = event["data"]["object"]
+
+        payment_id = session.get("metadata", {}).get(
+            "payment_id"
+        )
+
+        if payment_id:
+
+            try:
+
+                payment = Payment.objects.get(
+                    id=payment_id
+                )
+
+                payment.payment_status = Payment.Status.FAILED
+
+                payment.save(
+                    update_fields=["payment_status"]
+                )
+
+            except Payment.DoesNotExist:
+                pass
+
+    return HttpResponse(
+        "Webhook received",
+        status=200
+    )
 
 
 #           python manage.py runserver

@@ -13,9 +13,12 @@ from django.db.models import ExpressionWrapper
 from django.db.models import DecimalField
 from django.db.models import Avg
 from .filters import ProductFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated , AllowAny
 from drf_spectacular.utils import ( extend_schema, extend_schema_view, OpenApiResponse)
 from django.db.models import Q
+from ai_engine.services.embedding_service import search_similar_products
+from ai_engine.services.ai_response_service import generate_ai_response
 
 
 # Create your views here.
@@ -339,3 +342,58 @@ class WishlistViewSet(viewsets.ModelViewSet):
             {"message": "Product removed from wishlist"},
             status=status.HTTP_200_OK,
         )
+
+
+
+class SemanticSearchView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        query = request.query_params.get("q")
+
+        if not query:
+            return Response(
+                {"detail": "Search query 'q' is required."},
+                status=400
+            )
+
+        products = search_similar_products(query)
+
+        results = []
+
+        for product in products:
+
+            results.append({
+                "id": product.id,
+                "name": product.name,
+                "price": str(product.price),
+                "category": product.category.name,
+            })
+
+        return Response({
+            "query": query,
+            "results": results
+        })
+
+class ChatAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        message = request.data.get("message")
+
+        if not message:
+            return Response(
+                {"detail": "message is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        result = generate_ai_response(message)
+
+        return Response({
+            "user_message": message,
+            "answer": result["answer"],
+            "products": result["products"]
+        })

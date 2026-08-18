@@ -14,6 +14,7 @@ from app.tools.recommendation_tool import recommend_products
 from app.tools.cart_tool import add_to_cart
 from app.tools.memory_tool import save_memory, recall_memory
 from langgraph.checkpoint.memory import InMemorySaver
+from app.tools.knowledge_tool import search_knowledge
 
 tools = [
     search_products,
@@ -21,6 +22,7 @@ tools = [
     add_to_cart,
     save_memory,
     recall_memory,
+    search_knowledge,
 ]
 
 tool_node = ToolNode(tools)

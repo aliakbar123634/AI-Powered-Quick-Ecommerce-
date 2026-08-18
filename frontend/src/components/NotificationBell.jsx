@@ -41,6 +41,10 @@ useEffect(()=>{
 
 fetchNotifications();
 
+const refreshInterval = setInterval(fetchNotifications, 30000);
+
+return ()=> clearInterval(refreshInterval);
+
 },[]);
 
 
@@ -122,7 +126,7 @@ const response = await getNotifications();
 
 setNotifications(
 
-response.data.results
+response.data.results ?? response.data ?? []
 
 );
 
@@ -131,7 +135,9 @@ response.data.results
 }catch(error){
 
 
-console.log(error);
+console.error("Could not load notifications:", error);
+
+setNotifications([]);
 
 
 }
@@ -321,7 +327,17 @@ ref={dropdownRef}
 <button
 
 
-onClick={()=>setOpen(!open)}
+onClick={()=>{
+
+setOpen(!open);
+
+if (!open) {
+
+fetchNotifications();
+
+}
+
+}}
 
 
 className="

@@ -12,40 +12,21 @@ def send_email_notification(
         subject,
         message
 ):
-
     try:
+        if not settings.RESEND_API_KEY:
+            raise ValueError("RESEND_API_KEY is not configured")
 
-        response = resend.Emails.send({
+        if not to_email:
+            raise ValueError("Recipient email is missing")
 
-            "from":
-            "Quick Ecommerce <onboarding@resend.dev>",
-
-
-            "to":
-            [
-                to_email
-            ],
-
-
-            "subject":
-            subject,
-
-
-            "text":
-            message
-
+        return resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": [to_email],
+            "subject": subject,
+            "text": message,
         })
-
-
-        return response
-
-
-    except Exception as e:
-
-        print(
-            "EMAIL ERROR:",
-            e
-        )
-
-
+    except Exception as error:
+        # Keep the delivery-status API working even if the email provider fails.
+        # The exact Resend error is visible in the Django server console.
+        print(f"EMAIL ERROR for {to_email}: {error}")
         return None

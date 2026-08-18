@@ -41,7 +41,7 @@ if settings.DEBUG:
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT
     )
-#              cd quickai-ai
+#              cd quickai_ai
 #              cd main
 #              python manage.py runserver
 #              stripe listen --forward-to localhost:8000/api/orders/stripe/webhook/
@@ -50,5 +50,6 @@ if settings.DEBUG:
 #              python -m venv venv
 #              venv\Scripts\activate
 #              python -m uvicorn app.main:app --reload --port 8001
+
 
 #              deactivate

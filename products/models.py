@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from accounts.models import CustomUserModel
+from pgvector.django import VectorField
 
 # Create your models here.
 class Category(models.Model):
@@ -57,6 +58,11 @@ class Product(models.Model):
     stock_status = models.BooleanField(default=True )
 
     is_active = models.BooleanField(default=True)
+    embedding = VectorField(
+    dimensions=768,
+    null=True,
+    blank=True
+    ) 
 
 
     created_at = models.DateTimeField(auto_now_add=True)

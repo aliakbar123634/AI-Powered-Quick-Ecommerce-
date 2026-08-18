@@ -6,6 +6,11 @@ from rest_framework.viewsets import ViewSet
 from .models import *
 from .serializers import *
 from rest_framework import status
+from rest_framework.views import APIView
+
+from rest_framework.permissions import AllowAny
+
+from ai_engine.services.knowledge.rag_service import answer_from_knowledge
 
 class SearchHistoryViewSet(viewsets.ModelViewSet):
 
@@ -222,145 +227,24 @@ class MemoryViewSet(viewsets.ModelViewSet):
             "message": "All memories deleted."
         })
 
-# class MemoryViewSet(viewsets.ModelViewSet):
 
-#     serializer_class = MemorySerializer
-#     permission_classes = [IsAuthenticated]
+class KnowledgeChatView(APIView):
 
-#     def get_queryset(self):
-#         return Memory.objects.filter(user=self.request.user)
+    permission_classes = [AllowAny]
 
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
+    def post(self, request):
 
-#     @action(detail=False, methods=["post"])
-#     def save(self, request):
+        question = request.data.get("question")
 
-#         key = request.data.get("key")
-#         value = request.data.get("value")
-
-#         if not key or not value:
-#             return Response(
-#                 {"detail": "key and value are required."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         memory, created = Memory.objects.update_or_create(
-#             user=request.user,
-#             key=key,
-#             defaults={
-#                 "value": value
-#             }
-#         )
-
-#         return Response({
-#             "message": "Memory saved successfully.",
-#             "key": memory.key,
-#             "value": memory.value
-#         })
-
-#     @action(detail=False, methods=["get"])
-#     def recall(self, request):
-
-#         key = request.query_params.get("key")
-
-#         if not key:
-#             return Response(
-#                 {"detail": "key is required."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         try:
-
-#             memory = Memory.objects.get(
-#                 user=request.user,
-#                 key=key
-#             )
-
-#             return Response({
-#                 "key": memory.key,
-#                 "value": memory.value
-#             })
-
-#         except Memory.DoesNotExist:
-
-#             return Response(
-#                 {
-#                     "detail": "Memory not found."
-#                 },
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-
-#     @action(detail=False, methods=["delete"])
-#     def clear(self, request):
-
-#         self.get_queryset().delete()
-
-#         return Response({
-#             "message": "All memories deleted."
-#         })       
-
-# class MemoryViewSet(viewsets.ModelViewSet):
-
-    serializer_class = MemorySerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Memory.objects.filter(
-            user=self.request.user
-        ).order_by("-updated_at")
-
-    def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user
-        )
-
-    @action(detail=False, methods=["delete"])
-    def clear(self, request):
-
-        self.get_queryset().delete()
-
-        return Response({
-            "message": "Memory cleared successfully."
-        })
-
-    @action(detail=False, methods=["post"])
-    def save_memory(self, request):
-
-        key = request.data.get("key")
-        value = request.data.get("value")
-
-        memory, created = Memory.objects.update_or_create(
-            user=request.user,
-            key=key,
-            defaults={
-                "value": value
-            }
-        )
-
-        return Response({
-            "message": "Memory saved.",
-            "created": created,
-            "memory": MemorySerializer(memory).data
-        })
-
-    @action(detail=False, methods=["get"])
-    def recall(self, request):
-
-        key = request.query_params.get("key")
-
-        try:
-            memory = Memory.objects.get(
-                user=request.user,
-                key=key
-            )
-
+        if not question:
             return Response(
-                MemorySerializer(memory).data
+                {"error": "Question is required."},
+                status=400
             )
 
-        except Memory.DoesNotExist:
+        answer = answer_from_knowledge(question)
 
-            return Response({
-                "message": "Memory not found."
-            }, status=404)    
+        return Response({
+            "question": question,
+            "answer": answer
+        })

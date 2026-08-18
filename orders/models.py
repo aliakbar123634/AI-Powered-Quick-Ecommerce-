@@ -6,7 +6,6 @@ import uuid
 
 # Create your models here.
 
-
 class Cart(models.Model):
     user = models.OneToOneField(
         CustomUserModel,

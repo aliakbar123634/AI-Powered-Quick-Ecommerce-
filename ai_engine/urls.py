@@ -1,4 +1,5 @@
 ﻿from rest_framework.routers import DefaultRouter
+from django.urls import path , include
 from . import views
 from .views import *
 router = DefaultRouter()
@@ -40,4 +41,12 @@ router.register(
 )
 
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls)),
+    path(
+        "knowledge-chat/",
+        KnowledgeChatView.as_view(),
+        name="knowledge-chat"
+    ),
+]
+# urlpatterns = router.urls

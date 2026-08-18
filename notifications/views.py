@@ -15,7 +15,7 @@ class NotifictaionViewSet(viewsets.ModelViewSet):
 
         return Notification.objects.filter(
             user=self.request.user
-        )
+        ).order_by("-created_at")
     @action(detail=True, methods=["patch"])
     def mark_read(self,request,pk=None):
         notification = self.get_object()

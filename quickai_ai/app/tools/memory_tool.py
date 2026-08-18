@@ -82,38 +82,4 @@ def recall_memory(
 
         return None        
 
-# @tool
-# def recall_memory(key:str ,token: Annotated[str, InjectedState("access_token")] ):
-#     """
-#     Recall previously saved memory.
 
-#     Use this tool whenever the user asks:
-
-#     - What is my budget?
-#     - What is my favorite brand?
-#     - What do you remember about me?
-#     """
-#     try:
-#         url=f"{settings.BACKEND_BASE_URL}/api/ai_engine/memory/recall/"   
-#         response=requests.get(
-#             url=url,
-#             headers={
-#                 "Authorization": f"Bearer {token}"
-#             }, 
-#             params={
-#                 "key": key
-#             }  ,
-#             timeout=10  
-#         )
-#         response.raise_for_status()
-#         data = response.json()
-#         return data
-#     except requests.RequestException as e:
-
-#         print(e)
-
-#         if e.response:
-#             print(e.response.status_code)
-#             print(e.response.text)
-
-#         return "Memory not found."
