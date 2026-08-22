@@ -30,9 +30,15 @@ export const updateProfile = (id, data) =>
   });
 
 export const resetPassword = (uid, token, data) => {
+
     return API.post(
-        `accounts/reset-password/${uid}/${token}/`,
-        data
+        "accounts/reset-password/",
+        {
+            uid,
+            token,
+            password: data.password,
+            password2: data.password2,
+        }
     );
 };
 
@@ -42,4 +48,13 @@ export const forgotPassword = (data) => {
         "accounts/forgot-password/",
         data
     );
+};
+
+
+// Newsletter Subscribe
+export const subscribeNewsletter = (data) => {
+  return API.post(
+    "accounts/api/newsletter/",
+    data
+  );
 };

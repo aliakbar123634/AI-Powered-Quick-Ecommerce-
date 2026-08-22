@@ -8,7 +8,7 @@ const App = () => {
     <div>
       
        <BrowserRouter>
-           <AICursor />
+           {/* <AICursor /> */}
            <AppRoutes />            
       </BrowserRouter>
              

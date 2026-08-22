@@ -233,7 +233,7 @@ RESEND_FROM_EMAIL = os.getenv(
     "RESEND_FROM_EMAIL",
     "Quick Ecommerce <onboarding@resend.dev>",
 )
-
+FRONTEND_URL = "http://localhost:5173"
 
 # ============================================================
 # STRIPE

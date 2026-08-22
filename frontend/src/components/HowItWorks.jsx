@@ -7,6 +7,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { Link } from "react-router-dom";
+
 const steps = [
   {
     number: "01",
@@ -42,10 +44,10 @@ const steps = [
 const HowItWorks = () => {
   return (
     <section className="py-24 bg-white">
+
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
-
         <div className="text-center max-w-3xl mx-auto mb-20">
 
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-600 font-medium">
@@ -55,7 +57,9 @@ const HowItWorks = () => {
 
           <h2 className="mt-6 text-4xl md:text-6xl font-bold text-[#0F172A]">
             Shopping In
-            <span className="text-[#2563EB]"> 4 Simple Steps</span>
+            <span className="text-[#2563EB]">
+              {" "}4 Simple Steps
+            </span>
           </h2>
 
           <p className="mt-6 text-lg text-gray-500">
@@ -65,11 +69,12 @@ const HowItWorks = () => {
 
         </div>
 
-        {/* Steps */}
 
+        {/* Steps */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
 
           {steps.map((step) => {
+
             const Icon = step.icon;
 
             return (
@@ -91,6 +96,7 @@ const HowItWorks = () => {
                   }
                 `}
               >
+
                 {step.featured && (
                   <div className="absolute -top-3 left-6">
                     <span className="px-3 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
@@ -131,39 +137,57 @@ const HowItWorks = () => {
                 <div className="mt-6 inline-flex items-center px-4 py-2 rounded-full bg-[#F1F5F9] text-sm text-gray-600">
                   Quick & Easy
                 </div>
+
               </div>
             );
           })}
+
         </div>
 
-        {/* Trust Stats */}
 
+        {/* Trust Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
 
           <div className="bg-[#F8FAFC] rounded-2xl p-6 text-center border border-[#E2E8F0]">
-            <h3 className="text-3xl font-bold text-[#2563EB]">10K+</h3>
-            <p className="text-gray-500 mt-2">Active Users</p>
+            <h3 className="text-3xl font-bold text-[#2563EB]">
+              10K+
+            </h3>
+            <p className="text-gray-500 mt-2">
+              Active Users
+            </p>
           </div>
 
           <div className="bg-[#F8FAFC] rounded-2xl p-6 text-center border border-[#E2E8F0]">
-            <h3 className="text-3xl font-bold text-[#16A34A]">5K+</h3>
-            <p className="text-gray-500 mt-2">Products</p>
+            <h3 className="text-3xl font-bold text-[#16A34A]">
+              5K+
+            </h3>
+            <p className="text-gray-500 mt-2">
+              Products
+            </p>
           </div>
 
           <div className="bg-[#F8FAFC] rounded-2xl p-6 text-center border border-[#E2E8F0]">
-            <h3 className="text-3xl font-bold text-purple-600">98%</h3>
-            <p className="text-gray-500 mt-2">Satisfaction</p>
+            <h3 className="text-3xl font-bold text-purple-600">
+              98%
+            </h3>
+            <p className="text-gray-500 mt-2">
+              Satisfaction
+            </p>
           </div>
 
           <div className="bg-[#F8FAFC] rounded-2xl p-6 text-center border border-[#E2E8F0]">
-            <h3 className="text-3xl font-bold text-orange-500">15 Min</h3>
-            <p className="text-gray-500 mt-2">Delivery</p>
+            <h3 className="text-3xl font-bold text-orange-500">
+              15 Min
+            </h3>
+            <p className="text-gray-500 mt-2">
+              Delivery
+            </p>
           </div>
 
         </div>
 
-        {/* CTA */}
 
+        {/* CTA */}
         <div className="mt-20 rounded-[32px] overflow-hidden bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] p-12 text-center text-white shadow-2xl">
 
           <h3 className="text-4xl md:text-5xl font-bold">
@@ -175,14 +199,34 @@ const HowItWorks = () => {
             save money and get them delivered in minutes.
           </p>
 
-          <button className="mt-8 bg-white text-[#2563EB] px-8 py-4 rounded-2xl font-semibold inline-flex items-center gap-2 hover:scale-105 transition-all">
+
+          {/* Explore Products Button */}
+
+          <Link
+            to="/products"
+            className="
+              mt-8
+              bg-white
+              text-[#2563EB]
+              px-8
+              py-4
+              rounded-2xl
+              font-semibold
+              inline-flex
+              items-center
+              gap-2
+              hover:scale-105
+              transition-all
+            "
+          >
             Explore Products
             <ArrowRight size={20} />
-          </button>
+          </Link>
 
         </div>
 
       </div>
+
     </section>
   );
 };

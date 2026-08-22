@@ -1,7 +1,7 @@
 from itertools import count
 from django.shortcuts import render
 from . models import CustomUserModel , Address
-from .serializers import CustomUserSerializer , LoginSerializer , AddressSerializer , DeliveryCheckSerializer
+from .serializers import CustomUserSerializer , LoginSerializer , AddressSerializer , DeliveryCheckSerializer , ResetPasswordSerializer , ForgotPasswordSerializer , NewsletterSubscribeSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,6 +15,14 @@ from .serializers import ProfileSerializer
 from rest_framework.decorators import action
 from .utils.distance import calculate_distance
 from rest_framework.exceptions import ValidationError
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
+import resend
+from django.utils.http import urlsafe_base64_decode
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.contrib.auth import password_validation
 
 
 
@@ -267,4 +275,172 @@ class DeliveryCheckAPIView(APIView):
                 "estimated_delivery_time": eta,
             },
             status=status.HTTP_200_OK,
+        )    
+
+
+class ForgotPasswordView(APIView):
+
+    permission_classes = []
+
+    def post(self, request):
+
+        serializer = ForgotPasswordSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+
+        try:
+            user = CustomUserModel.objects.get(
+                email=email
+            )
+        except CustomUserModel.DoesNotExist:
+
+            # Security reason:
+            # Don't reveal whether email exists.
+            return Response({
+                "message": "If this email exists, a password reset link has been sent."
+            })
+
+        uid = urlsafe_base64_encode(
+            force_bytes(user.pk)
+        )
+
+        token = default_token_generator.make_token(
+            user
+        )
+
+        reset_link = (
+            f"{settings.FRONTEND_URL}"
+            f"/reset-password/{uid}/{token}"
+        )
+
+        resend.api_key = settings.RESEND_API_KEY
+
+        resend.Emails.send({
+            "from": "QuickAI <onboarding@resend.dev>",
+            "to": [user.email],
+            "subject": "Reset your QuickAI password",
+            "html": f"""
+                <h2>Reset your password</h2>
+
+                <p>
+                    You requested to reset your QuickAI password.
+                </p>
+
+                <p>
+                    Click the button below to create a new password:
+                </p>
+
+                <a href="{reset_link}"
+                   style="
+                   display:inline-block;
+                   padding:12px 20px;
+                   background:#00a63c;
+                   color:white;
+                   text-decoration:none;
+                   border-radius:6px;
+                   ">
+                    Reset Password
+                </a>
+
+                <p>
+                    If you did not request this, you can safely ignore
+                    this email.
+                </p>
+
+                <p>
+                    This link will expire when the password reset token
+                    becomes invalid.
+                </p>
+            """
+        })
+
+        return Response({
+            "message": "If this email exists, a password reset link has been sent."
+        })
+
+
+class ResetPasswordView(APIView):
+
+    permission_classes = []
+
+    def post(self, request):
+
+        uid = request.data.get("uid")
+        token = request.data.get("token")
+
+        if not uid or not token:
+            return Response(
+                {"error": "Invalid reset link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user_id = urlsafe_base64_decode(
+                uid
+            ).decode()
+
+            user = CustomUserModel.objects.get(
+                pk=user_id
+            )
+
+        except (
+            TypeError,
+            ValueError,
+            OverflowError,
+            CustomUserModel.DoesNotExist
+        ):
+            return Response(
+                {"error": "Invalid reset link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not default_token_generator.check_token(
+            user,
+            token
+        ):
+            return Response(
+                {"error": "Reset link is invalid or expired."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = ResetPasswordSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        password = serializer.validated_data["password"]
+
+        user.set_password(password)
+        user.save()
+
+        return Response({
+            "message": "Password reset successfully."
+        })
+
+
+class NewsletterSubscribeView(APIView):
+
+    def post(self, request):
+
+        serializer = NewsletterSubscribeSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        subscriber = serializer.save()
+
+        return Response(
+            {
+                "message": "Successfully subscribed to newsletter.",
+                "email": subscriber.email,
+            },
+            status=status.HTTP_201_CREATED,
         )    

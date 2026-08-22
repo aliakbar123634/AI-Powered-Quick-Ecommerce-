@@ -1,5 +1,5 @@
-
 import ProductsGrid from "./ProductsGrid";
+import { Link } from "react-router-dom";
 
 const FeaturedProducts = () => {
   return (
@@ -8,6 +8,7 @@ const FeaturedProducts = () => {
       <div className="flex justify-between items-center mb-10">
 
         <div>
+
           <div className="flex items-center gap-3">
 
             <h2 className="text-5xl font-bold">
@@ -26,11 +27,25 @@ const FeaturedProducts = () => {
 
         </div>
 
-        <button className="text-[#2563EB] font-semibold hover:underline">
+
+        {/* View All */}
+
+        <Link
+          to="/products"
+          className="
+            text-[#2563EB]
+            font-semibold
+            hover:underline
+            cursor-pointer
+          "
+        >
           View All →
-        </button>
+        </Link>
 
       </div>
+
+
+      {/* Featured Products */}
 
       <ProductsGrid limit={8} />
 

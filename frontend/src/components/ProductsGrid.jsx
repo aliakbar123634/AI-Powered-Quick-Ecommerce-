@@ -33,6 +33,7 @@ const ProductsGrid = ({
 
   const fetchProducts = async () => {
     try {
+      console.log("SEARCH VALUE:", search);
       const data = await getProducts(
         page,
         search,
