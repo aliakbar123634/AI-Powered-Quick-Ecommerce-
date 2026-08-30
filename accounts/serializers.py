@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from .models import CustomUserModel , Address , NewsletterSubscriber
+from .models import CustomUserModel , Address , NewsletterSubscriber , RiderProfile
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
-
+from orders.models import Order
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -190,3 +191,174 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+class RiderProfileSerializer(serializers.ModelSerializer):
+
+    rider_email = serializers.EmailField(
+        source="user.email",
+        read_only=True
+    )
+
+    rider_name = serializers.CharField(
+        source="user.name",
+        read_only=True
+    )
+
+    class Meta:
+        model = RiderProfile
+
+        fields = [
+            "id",
+            "user",
+            "rider_name",
+            "rider_email",
+            "vehicle_type",
+            "availability_status",
+            "current_latitude",
+            "current_longitude",
+            "rating",
+        ]
+
+        read_only_fields = [
+            "id",
+            "rider_name",
+            "rider_email",
+            "rating",
+        ]    
+
+
+# class RiderOrderSerializer(serializers.ModelSerializer):
+
+#     customer_name = serializers.CharField(
+#         source="user.name",
+#         read_only=True
+#     )
+
+#     customer_phone = serializers.CharField(
+#         source="user.phone_number",
+#         read_only=True
+#     )
+
+#     delivery_status = serializers.CharField(
+#         source="delivery.status",
+#         read_only=True
+#     )
+#     delivery_id = serializers.IntegerField(
+#         source="delivery.id",
+#         read_only=True
+#     )
+
+#     class Meta:
+
+#         model = Order
+
+#         fields = [
+#             "id",
+#             "order_number",
+#             "customer_name",
+#             "customer_phone",
+#             "total_price",
+#             "delivery_status",
+#             "delivery_id",
+#             "status",
+#             "created_at",
+#         ]
+
+
+
+
+# class RiderOrderSerializer(serializers.ModelSerializer):
+
+#     customer_name = serializers.CharField(
+#         source="user.name",
+#         read_only=True
+#     )
+
+#     customer_phone = serializers.CharField(
+#         source="user.phone_number",
+#         read_only=True
+#     )
+
+#     delivery_status = serializers.SerializerMethodField()
+
+#     delivery_id = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Order
+
+#         fields = [
+#             "id",
+#             "order_number",
+#             "customer_name",
+#             "customer_phone",
+#             "total_price",
+#             "delivery_status",
+#             "delivery_id",
+#             "status",
+#             "created_at",
+#         ]
+
+#     def get_delivery_status(self, obj):
+#         delivery = obj.deliverytracking_set.first()
+
+#         if delivery:
+#             return delivery.status
+
+#         return None
+
+#     def get_delivery_id(self, obj):
+#         delivery = obj.deliverytracking_set.first()
+
+#         if delivery:
+#             return delivery.id
+
+#         return None
+
+
+class RiderOrderSerializer(serializers.ModelSerializer):
+
+    customer_name = serializers.CharField(
+        source="user.name",
+        read_only=True
+    )
+
+    customer_phone = serializers.CharField(
+        source="user.phone_number",
+        read_only=True
+    )
+
+    delivery_status = serializers.SerializerMethodField()
+    delivery_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+
+        fields = [
+            "id",
+            "order_number",
+            "customer_name",
+            "customer_phone",
+            "total_price",
+            "delivery_status",
+            "delivery_id",
+            "status",
+            "created_at",
+        ]
+
+    def get_delivery(self, obj):
+        from delivery.models import DeliveryTracking
+
+        return DeliveryTracking.objects.filter(
+            order=obj
+        ).first()
+
+    def get_delivery_status(self, obj):
+        delivery = self.get_delivery(obj)
+
+        return delivery.status if delivery else None
+
+    def get_delivery_id(self, obj):
+        delivery = self.get_delivery(obj)
+
+        return delivery.id if delivery else None

@@ -1,7 +1,10 @@
+
+
 import API from "./api";
-// import axios from "axios";
 
-
+// ============================================================
+// RIDER - MY ORDERS
+// ============================================================
 
 export const getMyOrders = () => {
     return API.get(
@@ -9,26 +12,49 @@ export const getMyOrders = () => {
     );
 };
 
-export const acceptOrder = (id) => {
-    return API.patch(
-        `/accounts/riders/${id}/accept/`
+// ============================================================
+// RIDER - ORDER DETAIL
+// ============================================================
+
+export const getRiderOrderDetail = (orderId) => {
+    return API.get(
+        `/accounts/riders/${orderId}/order-detail/`
     );
 };
 
-export const pickedUpOrder = (id) => {
+
+// ============================================================
+// RIDER - PICKED UP
+// ASSIGNED → PICKED_UP
+// ============================================================
+
+export const pickedUpOrder = (deliveryId) => {
     return API.patch(
-        `/accounts/riders/${id}/picked-up/`
+        `/delivery/tracking/${deliveryId}/picked-up/`
     );
 };
 
-export const outForDeliveryOrder = (id) => {
+
+// ============================================================
+// RIDER - OUT FOR DELIVERY
+// PICKED_UP → OUT_FOR_DELIVERY
+// ============================================================
+
+export const outForDeliveryOrder = (deliveryId) => {
     return API.patch(
-        `/accounts/riders/${id}/out-for-delivery/`
+        `/delivery/tracking/${deliveryId}/out-for-delivery/`
     );
 };
 
-export const deliveredOrder = (id) => {
+
+// ============================================================
+// RIDER - DELIVERED
+// OUT_FOR_DELIVERY → DELIVERED
+// ============================================================
+
+export const deliveredOrder = (deliveryId) => {
     return API.patch(
-        `/accounts/riders/${id}/delivered/`
+        `/delivery/tracking/${deliveryId}/delivered/`
     );
 };
+

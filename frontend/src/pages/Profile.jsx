@@ -10,7 +10,7 @@ import ProfileActions from "../components/ProfileActions";
 import Footer from "../components/footer/Footer";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import RiderNavbar from "../components/rider/RiderNavbar";
 
 import {getProfile} from "../api/authApi";
 import {getOrders} from "../api/orderApi";
@@ -74,7 +74,8 @@ useEffect(() => {
    if (loading) return <h2>Loading...</h2>;
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
+      {user?.role === "RIDER" ? <RiderNavbar /> : <Navbar />}
       <ProfileBreadcrumb />
       <ProfileHeader/>
       <UserProfileCard user={user} />

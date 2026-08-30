@@ -1,7 +1,7 @@
 from itertools import count
 from django.shortcuts import render
-from . models import CustomUserModel , Address
-from .serializers import CustomUserSerializer , LoginSerializer , AddressSerializer , DeliveryCheckSerializer , ResetPasswordSerializer , ForgotPasswordSerializer , NewsletterSubscribeSerializer
+from . models import CustomUserModel , Address , RiderProfile
+from .serializers import CustomUserSerializer , LoginSerializer , AddressSerializer , DeliveryCheckSerializer , ResetPasswordSerializer , ForgotPasswordSerializer , NewsletterSubscribeSerializer , RiderProfileSerializer , RiderOrderSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,8 +9,8 @@ from django.contrib.auth import authenticate , login , logout
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import CustomUserModel
+from rest_framework.permissions import IsAuthenticated , IsAdminUser
+from .models import CustomUserModel 
 from .serializers import ProfileSerializer
 from rest_framework.decorators import action
 from .utils.distance import calculate_distance
@@ -23,8 +23,10 @@ import resend
 from django.utils.http import urlsafe_base64_decode
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth import password_validation
-
-
+from .permissions import IsAdminRole
+from rest_framework_simplejwt.views import TokenObtainPairView
+from orders.models import Order
+from orders.serializers import OrderSerializer
 
 # Create your views here.
 
@@ -59,45 +61,87 @@ class RegisterView(APIView):
 )
    
 
-class LoginView(APIView):
-    def post(self, request):
+# class LoginView(APIView):
+#     def post(self, request):
 
-        print("REQUEST DATA =", request.data)
+#         print("REQUEST DATA =", request.data)
+
+#         serializer = LoginSerializer(data=request.data)
+
+#         if serializer.is_valid():
+
+#             email = serializer.validated_data.get("email")
+#             password = serializer.validated_data.get("password")
+
+#             print("EMAIL =", email)
+#             print("PASSWORD =", password)
+
+#             user = authenticate(
+#                 request,
+#                 username=email,
+#                 password=password
+#             )
+
+#             print("USER =", user)
+
+#             if user is not None:
+#                 refresh = RefreshToken.for_user(user)
+
+#                 return Response({
+#                     "access": str(refresh.access_token),
+#                     "refresh": str(refresh)
+#                 })
+
+#             return Response(
+#                 {"error": "Invalid email or password"},
+#                 status=401
+#             )
+
+#         print(serializer.errors)
+#         return Response(serializer.errors, status=400)
+
+
+class LoginView(APIView):
+
+    def post(self, request):
 
         serializer = LoginSerializer(data=request.data)
 
-        if serializer.is_valid():
+        serializer.is_valid(raise_exception=True)
 
-            email = serializer.validated_data.get("email")
-            password = serializer.validated_data.get("password")
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
 
-            print("EMAIL =", email)
-            print("PASSWORD =", password)
+        user = authenticate(
+            request,
+            username=email,
+            password=password
+        )
 
-            user = authenticate(
-                request,
-                username=email,
-                password=password
-            )
-
-            print("USER =", user)
-
-            if user is not None:
-                refresh = RefreshToken.for_user(user)
-
-                return Response({
-                    "access": str(refresh.access_token),
-                    "refresh": str(refresh)
-                })
-
+        if user is None:
             return Response(
-                {"error": "Invalid email or password"},
-                status=401
+                {
+                    "error": "Invalid email or password"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
-        print(serializer.errors)
-        return Response(serializer.errors, status=400)
+        refresh = RefreshToken.for_user(user)
 
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "role": user.role,
+                }
+            },
+            status=status.HTTP_200_OK
+        )
 
 @extend_schema(
     summary="Logout User",
@@ -444,3 +488,346 @@ class NewsletterSubscribeView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )    
+
+
+
+# class RiderProfileViewSet(viewsets.ModelViewSet):
+
+#     queryset = RiderProfile.objects.select_related("user")
+
+#     serializer_class = RiderProfileSerializer
+
+#     def get_permissions(self):
+
+#         # Admin operations
+#         if self.action in [
+#             "list",
+#             "create",
+#             "destroy",
+#             "available",
+#         ]:
+#             return [IsAdminUser()]
+
+#         # Rider operations
+#         return [IsAuthenticated()]
+
+#     def get_queryset(self):
+
+#         user = self.request.user
+
+#         # Admin can see all riders
+#         if user.is_staff or user.is_superuser:
+#             return RiderProfile.objects.select_related("user")
+
+#         # Normal authenticated user can only access
+#         # his own rider profile
+#         return RiderProfile.objects.select_related(
+#             "user"
+#         ).filter(
+#             user=user
+#         )
+class RiderProfileViewSet(viewsets.ModelViewSet):
+
+    queryset = RiderProfile.objects.select_related("user")
+    serializer_class = RiderProfileSerializer
+
+    def get_permissions(self):
+
+        if self.action == "available":
+            permission_classes = [IsAdminRole]
+
+        elif self.action in [
+            "set_availability",
+            "update_location",
+        ]:
+            permission_classes = [IsAuthenticated]
+
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [
+            permission()
+            for permission in permission_classes
+        ]
+
+    def get_queryset(self):
+
+        user = self.request.user
+
+        if user.role == "ADMIN":
+            return RiderProfile.objects.select_related("user")
+
+        if user.role == "RIDER":
+            return RiderProfile.objects.filter(
+                user=user
+            )
+
+        return RiderProfile.objects.none()
+
+    # ==========================================
+    # ADMIN → AVAILABLE RIDERS
+    # ==========================================
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="available"
+    )
+    def available(self, request):
+
+        riders = RiderProfile.objects.select_related(
+            "user"
+        ).filter(
+            availability_status=True,
+            user__is_active=True
+        )
+
+        serializer = self.get_serializer(
+            riders,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    # ==========================================
+    # RIDER → AVAILABILITY
+    # ==========================================
+
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path="availability"
+    )
+    def availability(self, request):
+
+        try:
+            rider = request.user.rider_profile
+
+        except RiderProfile.DoesNotExist:
+
+            return Response(
+                {
+                    "error":
+                    "You are not a rider"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        value = request.data.get(
+            "availability_status"
+        )
+
+        if value is None:
+
+            return Response(
+                {
+                    "error":
+                    "availability_status is required"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if isinstance(value, str):
+
+            value = value.lower() == "true"
+
+        if not isinstance(value, bool):
+
+            return Response(
+                {
+                    "error":
+                    "availability_status must be true or false"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Don't allow rider to become available
+        # if he still has an active delivery.
+        if value:
+
+            active_order = rider.orders.filter(
+                status__in=[
+                    "CONFIRMED",
+                    "OUT_FOR_DELIVERY",
+                ]
+            ).exists()
+
+            if active_order:
+
+                return Response(
+                    {
+                        "error":
+                        "You still have an active order"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        rider.availability_status = value
+
+        rider.save(
+            update_fields=[
+                "availability_status"
+            ]
+        )
+
+        return Response(
+            {
+                "availability_status":
+                rider.availability_status
+            },
+            status=status.HTTP_200_OK
+        )
+
+    # ==========================================
+    # RIDER → UPDATE OWN LOCATION
+    # ==========================================
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="update-location"
+    )
+    def update_location(self, request, pk=None):
+
+        try:
+            rider = request.user.rider_profile
+
+        except RiderProfile.DoesNotExist:
+
+            return Response(
+                {
+                    "error":
+                    "You are not a rider"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if str(rider.id) != str(pk):
+
+            return Response(
+                {
+                    "error":
+                    "You can only update your own location"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        latitude = request.data.get(
+            "latitude"
+        )
+
+        longitude = request.data.get(
+            "longitude"
+        )
+
+        if latitude is None or longitude is None:
+
+            return Response(
+                {
+                    "error":
+                    "latitude and longitude are required"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        rider.current_latitude = latitude
+
+        rider.current_longitude = longitude
+
+        rider.save(
+            update_fields=[
+                "current_latitude",
+                "current_longitude"
+            ]
+        )
+
+        return Response(
+            {
+                "message":
+                "Location updated successfully",
+
+                "latitude":
+                rider.current_latitude,
+
+                "longitude":
+                rider.current_longitude,
+            },
+            status=status.HTTP_200_OK
+        )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="my-orders"
+    )
+    def my_orders(self, request):
+
+        try:
+            rider = request.user.rider_profile
+
+        except RiderProfile.DoesNotExist:
+            return Response(
+                {
+                    "error": "You are not a rider"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        orders = Order.objects.filter(
+            rider=rider
+        ).select_related(
+            "user",
+            "rider",
+            "Warehouse"
+        )
+
+        serializer = RiderOrderSerializer(
+            orders,
+            many=True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+    @action(
+    detail=True,
+    methods=["get"],
+    url_path="order-detail"
+)
+    def order_detail(self, request, pk=None):
+
+        try:
+            rider = request.user.rider_profile
+        except RiderProfile.DoesNotExist:
+            return Response(
+            {
+                "error": "You are not a rider"
+            },
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+        try:
+            order = Order.objects.get(
+            id=pk,
+            rider=rider
+        )
+        except Order.DoesNotExist:
+            return Response(
+            {
+                "error": "Order not found"
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+        serializer = OrderSerializer(order)
+
+        return Response(
+            serializer.data,
+        status=status.HTTP_200_OK
+    )
+
+
+

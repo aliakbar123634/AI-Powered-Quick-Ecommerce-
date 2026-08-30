@@ -2,6 +2,7 @@
 
 import RiderHeader from "../components/rider/RiderHeader";
 import RiderStats from "../components/rider/RiderStats";
+import RiderNavbar from "../components/rider/RiderNavbar";
 
 import RiderDashboardSkeleton from "../components/rider/RiderDashboardSkeleton";
 import RiderOrderSection from "../components/rider/RiderOrderSection";
@@ -61,7 +62,7 @@ if (loading) {
 
     return (
         <>
-            <Navbar />
+            <RiderNavbar />
 
             <div className="min-h-screen bg-gray-100">
                 <div className="max-w-7xl mx-auto px-6 py-8">

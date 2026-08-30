@@ -38,37 +38,40 @@ const ProfileActions = ({ onLogout }) => {
 
         {/* Change Password */}
 
+
         <button
-          onClick={() => navigate("/change-password")}
-          className="flex items-center gap-4 p-5 rounded-2xl border hover:border-blue-600 hover:bg-blue-50 transition"
-        >
-          <Lock className="text-blue-600" />
-          <div className="text-left">
-            <h3 className="font-semibold">
-              Change Password
-            </h3>
-            <p className="text-sm text-gray-500">
-              Update your account password
-            </p>
-          </div>
-        </button>
+  onClick={() => navigate("/forgot-password")}
+  className="flex items-center gap-4 p-5 rounded-2xl border hover:border-blue-600 hover:bg-blue-50 transition"
+>
+  <Lock className="text-blue-600" />
+
+  <div className="text-left">
+    <h3 className="font-semibold">
+      Change Password
+    </h3>
+
+    <p className="text-sm text-gray-500">
+      Update your account password
+    </p>
+  </div>
+</button>
 
         {/* Manage Addresses */}
 
         <button
-          onClick={() => navigate("/addresses")}
-          className="flex items-center gap-4 p-5 rounded-2xl border hover:border-yellow-600 hover:bg-yellow-50 transition"
-        >
-          <MapPin className="text-yellow-600" />
-          <div className="text-left">
-            <h3 className="font-semibold">
-              Manage Addresses
-            </h3>
-            <p className="text-sm text-gray-500">
-              Add or edit your addresses
-            </p>
-          </div>
-        </button>
+  onClick={() => navigate("/location")}
+  className="flex items-center gap-4 p-5 rounded-2xl border hover:border-yellow-600 hover:bg-yellow-50 transition"
+>
+  <MapPin className="text-yellow-600" />
+  <div className="text-left">
+    <h3 className="font-semibold">
+      Manage Addresses
+    </h3>
+    <p className="text-sm text-gray-500">
+      Add or edit your addresses
+    </p>
+  </div>
+</button>
 
         {/* Logout */}
 

@@ -1,3 +1,42 @@
+// import { create } from "zustand";
+// import { persist } from "zustand/middleware";
+
+// const useAuthStore = create(
+//   persist(
+//     (set) => ({
+//       accessToken: null,
+//       refreshToken: null,
+//       isAuthenticated: false,
+
+//       login: (access, refresh) =>
+//         set({
+//           accessToken: access,
+//           refreshToken: refresh,
+//           isAuthenticated: true,
+//         }),
+
+//       logout: () =>
+//         set({
+//           accessToken: null,
+//           refreshToken: null,
+//           isAuthenticated: false,
+//         }),
+//     }),
+//     {
+//       name: "auth-storage",
+//     }
+//   )
+// );
+
+// export default useAuthStore;
+
+
+
+
+
+
+
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -6,12 +45,14 @@ const useAuthStore = create(
     (set) => ({
       accessToken: null,
       refreshToken: null,
+      user: null,
       isAuthenticated: false,
 
-      login: (access, refresh) =>
+      login: (access, refresh, user) =>
         set({
           accessToken: access,
           refreshToken: refresh,
+          user: user,
           isAuthenticated: true,
         }),
 
@@ -19,6 +60,7 @@ const useAuthStore = create(
         set({
           accessToken: null,
           refreshToken: null,
+          user: null,
           isAuthenticated: false,
         }),
     }),

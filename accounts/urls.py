@@ -8,6 +8,8 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'profiles', views.ProfileViewSet, basename='profile')
 router.register(r'addresses', views.AddressViewSet, basename='address')
+router.register(r'riders',views.RiderProfileViewSet,basename='rider')
+
 
 urlpatterns = [
     path("", include(router.urls)),

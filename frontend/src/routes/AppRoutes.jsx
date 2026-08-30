@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AdminRoute from "./AdminRoute";
 import Home from '../pages/Home'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
@@ -31,12 +32,15 @@ import ContactUs from "../pages/ContactUs";
 import FAQ from "../pages/FAQ";
 import Deals from "../pages/Deals";
 import AIChat from "../pages/AIChat";
-
+import AdminDashboard from "../pages/AdminDashboard";
+import RiderOrderDetail from "../pages/RiderOrderDetail";
+// import Addresses from "../pages/Addresses";
 
 const AppRoutes=()=>{
     return (
             <Routes>
                 <Route path="/" element={<Home/>}/>
+                {/* <Route path="/addresses" element={<Addresses />} /> */}
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/register" element={<Register/>}/>
                 <Route path="/category" element={<Category/>}/>
@@ -66,13 +70,14 @@ const AppRoutes=()=>{
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/deals" element={<Deals/>}/>
                 <Route path="/ai-chat" element={<AIChat />} />
+                <Route element={<AdminRoute />}>
+                <Route path="/admin"
+                        element={<AdminDashboard />}
+                    />
+                </Route>
+                <Route path="/rider/orders/:id" element={<RiderOrderDetail />}/>
+                
 
-
-                {/* <Route path="/delivary-tracking" element={<DeliveryTracking/>}/> */}
-
-                {/* <Route element={<ProtectedRoute />}>
-                    <Route path="/cart" element={<Cart />} />
-                </Route> */}
             </Routes>
     )
 }

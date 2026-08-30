@@ -23,8 +23,10 @@ export const createOrder=(data)=>
 export const getOrderDetail = (id) =>
   API.get(`orders/order/${id}/`);
 
-export const cancelOrder = (id) =>
-  API.patch(`orders/order/${id}/cancel/`);
+export const cancelOrder = (orderId) =>
+  API.patch(`orders/order/${orderId}/cancel/`);
+
+
 
 
 export const getAddresses = () =>
@@ -50,6 +52,9 @@ export const stripeCheckout = (id) =>
     `orders/payment/${id}/stripe-checkout/`
   );
 
+export const getOrderByStripeSession = (sessionId) =>
+  API.get(`orders/payment/session/${sessionId}/`);
+  
 
 export const paymentSuccess = (id, data) =>
   API.patch(
@@ -68,3 +73,6 @@ export const paymentFailed = (id) =>
   API.patch(
     `payments/payments/${id}/failed/`
   );
+
+export const getRiderOrderDetail = (id) =>
+  API.get(`orders/order/${id}/`);  

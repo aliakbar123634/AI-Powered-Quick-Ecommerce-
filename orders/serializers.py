@@ -1,4 +1,4 @@
-from .models import Cart ,  CartItem , Order , OrderItem
+from .models import Cart ,  CartItem , Order , OrderItem , Payment
 from rest_framework import serializers
 
 
@@ -132,44 +132,6 @@ class OrderItemSerializers(serializers.ModelSerializer):
 
 
 
-# class OrderSerializer(serializers.ModelSerializer):
-#     total_items = serializers.SerializerMethodField()
-#     items = OrderItemSerializers(many=True, read_only=True)
-
-#     class Meta:
-#         model = Order
-#         fields = [
-#             "id",
-#             "user",
-#             "Warehouse",
-#             "rider",
-#             "address",
-#             "order_number",
-#             "items",
-#             "total_items",
-#             "status",
-#             "subtotal",
-#             "delivery_fee",
-#             "discount",
-#             "total_price",
-#             "created_at",
-#         ]
-
-#         read_only_fields = [
-#             "id",
-#             "user",
-#             "order_number",
-#             "status",
-#             "subtotal",
-#             "delivery_fee",
-#             "discount",
-#             "total_price",
-#             "created_at",
-#         ]
-
-#     def get_total_items(self, obj):
-#         return sum(item.quantity for item in obj.items.all())        
-
 class OrderSerializer(serializers.ModelSerializer):
 
     total_items = serializers.SerializerMethodField()
@@ -179,107 +141,109 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    delivery_status = serializers.SerializerMethodField()
 
     class Meta:
-
         model = Order
 
         fields = [
-
             "id",
-
             "user",
-
             "Warehouse",
-
             "rider",
-
             "address",
-
 
             # snapshot fields
             "delivery_address",
-
             "delivery_city",
-
             "delivery_state",
-
             "delivery_country",
-
             "delivery_postal_code",
-
             "delivery_latitude",
-
             "delivery_longitude",
 
-
             "order_number",
-
             "items",
-
             "total_items",
 
+            # Order status
             "status",
 
+            # DeliveryTracking status
+            "delivery_status",
+
             "subtotal",
-
             "delivery_fee",
-
             "discount",
-
             "total_price",
-
             "created_at",
-
         ]
-
 
         read_only_fields = [
-
             "id",
-
             "user",
 
-
-            # ye backend fill karega
             "delivery_address",
-
             "delivery_city",
-
             "delivery_state",
-
             "delivery_country",
-
             "delivery_postal_code",
-
             "delivery_latitude",
-
             "delivery_longitude",
 
-
             "order_number",
-
             "status",
-
+            "delivery_status",
             "subtotal",
-
             "delivery_fee",
-
             "discount",
-
             "total_price",
-
             "created_at",
-
         ]
 
-
-
     def get_total_items(self, obj):
-
         return sum(
             item.quantity
             for item in obj.items.all()
         )
+
+    def get_delivery_status(self, obj):
+        try:
+            return obj.delivery.status
+        except obj.__class__.delivery.RelatedObjectDoesNotExist:
+            return None
+
+class PaymentSerializer(serializers.ModelSerializer):
+
+    order_number = serializers.CharField(
+        source="order.order_number",
+        read_only=True
+    )
+
+    class Meta:
+        model = Payment
+
+        fields = [
+            "id",
+            "order",
+            "order_number",
+            "amount",
+            "payment_method",
+            "payment_status",
+            "transaction_id",
+            "currency",
+            "stripe_session_id",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "order_number",
+            "amount",
+            "payment_status",
+            "transaction_id",
+            "stripe_session_id",
+            "created_at",
+        ]
 
 #         python manage.py runserver

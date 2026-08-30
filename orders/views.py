@@ -1,34 +1,35 @@
+from ast import Is
+import logging
 from django.shortcuts import render
 from accounts.utils import distance
-from . models import Cart , CartItem , Order , OrderItem
-from . serializers import CartSerializer , CartItemSerializer  , AddToCartSerializer , OrderItemSerializers , OrderSerializer
-from rest_framework.decorators import action
+import inventory
+from inventory.utils import warehouse
+from . models import Cart , CartItem , Order , OrderItem , Payment
+from . serializers import CartSerializer , CartItemSerializer  , AddToCartSerializer , OrderItemSerializers , OrderSerializer , PaymentSerializer
+from rest_framework.decorators import action, permission_classes
 from rest_framework import viewsets
 from drf_spectacular.utils import extend_schema
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated 
+from rest_framework.permissions import IsAuthenticated , IsAdminUser
 from products.models import Product
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
-from accounts.models import Address
+from accounts.models import Address, RiderProfile
 from decimal import Decimal
 from accounts.utils.distance import calculate_distance
-
+from inventory.utils.warehouse import get_nearest_warehouse
+from inventory.models import Inventory
 import stripe
-
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from notifications.models import Notification
+from rest_framework.decorators import api_view
+from notifications.utils import send_email_notification
+from delivery.models import DeliveryTracking
+from accounts.serializers import RiderOrderSerializer
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-
-from .models import Order, Payment
-
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
 # Create your views here.
 
 @extend_schema(
@@ -168,23 +169,42 @@ class CartItemViewSet(viewsets.ModelViewSet):
     description="Order operations"
     
 )
-   
-
-
+  
 class OrderViewSet(viewsets.ModelViewSet):
-
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        admin_actions = [
+        "assign_rider",
+        "admin_start_delivery",
+        "admin_delivered",
+        "admin_cancel_order",
+    ]
+
+        if self.action in admin_actions:
+            return [IsAdminUser()]
+
+        return [IsAuthenticated()]
 
     def get_queryset(self):
 
-        return Order.objects.filter(
-            user=self.request.user
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Order.objects.all().select_related(
+            "user",
+            "rider",
+            "Warehouse",
+            "address"
         )
 
-
+        return Order.objects.filter(
+        user=self.request.user
+    ).select_related(
+        "rider",
+        "Warehouse",
+        "address"
+    )
 
     @action(detail=False, methods=['post'], url_path='create')
     def create_order(self, request):
@@ -232,52 +252,48 @@ class OrderViewSet(viewsets.ModelViewSet):
                 {"error": "Invalid address"},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-
-
-        STORE_LATITUDE = 29.395600
-
-        STORE_LONGITUDE = 71.683600
-
-
-        MAX_DISTANCE = 10
-
-
+        warehouse=get_nearest_warehouse(address.latitude , address.longitude)
+        if not warehouse:
+           return Response({"error":"No warehouse available near you"
+        }, status=400)
 
         distance = calculate_distance(
-
-            STORE_LATITUDE,
-
-            STORE_LONGITUDE,
-
-            address.latitude,
-
-            address.longitude
-
+           warehouse.latitude,
+           warehouse.longitude,
+           address.latitude,
+           address.longitude
         )
-
-
-
-        if distance > MAX_DISTANCE:
-
-            return Response(
-
-                {
-
-                    "error":
-                    "Sorry delivery is not available in your area",
-
-                    "distance_km": distance
-
-                },
-
-                status=status.HTTP_400_BAD_REQUEST
-
-            )
-
-
-
+        # Reserve stock + create the order in ONE transaction.
+        # select_for_update() prevents two customers from buying the same stock simultaneously.
         with transaction.atomic():
+
+            locked_inventory = {}
+
+            for item in cart.items.all():
+                try:
+                    inventory = Inventory.objects.select_for_update().get(
+                        warehouse=warehouse,
+                        product=item.product
+                    )
+                except Inventory.DoesNotExist:
+                    return Response(
+                        {
+                            "error":
+                            f"{item.product.name} not available in your area"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                if inventory.quantity < item.quantity:
+                    return Response(
+                        {
+                            "error":
+                            f"Only {inventory.quantity} {item.product.name} available"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                locked_inventory[item.product_id] = inventory
 
 
             order = Order.objects.create(
@@ -285,6 +301,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 user=user,
 
                 address=address,
+                Warehouse=warehouse,
+                status="CONFIRMED",
 
 
                 # address snapshot
@@ -360,7 +378,12 @@ class OrderViewSet(viewsets.ModelViewSet):
                     price=product_price
 
                 )
+ 
+                inventory = locked_inventory[item.product_id]
+                inventory.quantity -= item.quantity
 
+
+                inventory.save()             
 
                 subtotal += product_price * item.quantity
 
@@ -392,14 +415,29 @@ class OrderViewSet(viewsets.ModelViewSet):
             order.delivery_fee = delivery_fee
 
             order.total_price = total_price
-
-
             order.save()
-
-
-
             cart.items.all().delete()
-
+            Notification.objects.create(
+                user=user,
+                title="Order Placed Successfully",
+                message=(
+                    f"Your order {order.order_number} "
+                    "has been placed successfully."
+                )
+            )    
+            send_email_notification(
+                user.email,
+                "Order Placed Successfully",
+                f"""
+                Hello,
+                Your order has been placed.
+                Order Number:
+                {order.order_number}
+                Total Amount:
+                {order.total_price}
+                Thank you for shopping.
+                """
+                )    
 
 
         serializer = OrderSerializer(order)
@@ -421,18 +459,310 @@ class OrderViewSet(viewsets.ModelViewSet):
                 {"error": "Order not found"},
                 status=status.HTTP_404_NOT_FOUND
             ) 
- 
+
         if order_of_id.status == "CANCELLED":
             return Response(
         {"error": "Order already cancelled"},
         status=status.HTTP_400_BAD_REQUEST
        )
-        order_of_id.status='CANCELLED'
-        order_of_id.save()
+        with transaction.atomic():
+
+            for item in order_of_id.items.all():
+
+                inventory = Inventory.objects.select_for_update().get(
+                    warehouse=order_of_id.Warehouse,
+                    product=item.product
+                )
+                inventory.quantity += item.quantity
+                inventory.save(update_fields=["quantity"])
+
+
+            order_of_id.status = "CANCELLED"
+            order_of_id.save()
         return Response({
             "message":"order cancelled successfully......"
         }, status=status.HTTP_200_OK)
 
+    @action(
+    detail=True,
+    methods=["patch"],
+    url_path="admin-cancel"
+)
+    def admin_cancel_order(self, request, pk=None):
+ 
+        try:
+            order = Order.objects.get(id=pk)
+
+        except Order.DoesNotExist:
+            return Response(
+            {"error": "Order not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+        if order.status in ["CANCELLED", "DELIVERED"]:
+            return Response(
+            {"error": "This order cannot be cancelled"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+        with transaction.atomic():
+
+        # Return stock to the warehouse
+            for item in order.items.all():
+
+                inventory = Inventory.objects.select_for_update().get(
+                warehouse=order.Warehouse,
+                product=item.product
+            )
+
+                inventory.quantity += item.quantity
+                inventory.save(update_fields=["quantity"])
+
+        # Make rider available again
+            if order.rider:
+                rider = order.rider
+                rider.availability_status = True
+                rider.save(update_fields=["availability_status"])
+
+        # Cancel order
+            order.status = "CANCELLED"
+            order.save(update_fields=["status"])
+
+        return Response(
+        {
+            "message": "Order cancelled successfully"
+        },
+        status=status.HTTP_200_OK
+    )
+    
+    @action(
+    detail=True,
+    methods=["patch"],
+    url_path="assign-rider"
+)
+    def assign_rider(self, request, pk=None):
+
+        try:
+            order = Order.objects.get(
+            id=pk
+        )
+
+        except Order.DoesNotExist:
+
+            return Response(
+            {
+                "error": "Order not found"
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+    # payment check
+
+        if order.status != "CONFIRMED":
+            return Response(
+            {
+                "error":
+                "Payment is not completed yet"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        rider_id = request.data.get(
+            "rider"
+        )
+        if not rider_id:
+            return Response(
+                {"error": "Rider id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            rider = RiderProfile.objects.get(
+            id=rider_id
+        )
+        except RiderProfile.DoesNotExist:
+            return Response(
+            {
+                "error":
+                "Rider not found"
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
+        if not rider.user.is_active:
+            return Response(
+            {"error": "Rider account is inactive"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        if not rider.availability_status:
+            return Response(
+            {
+                "error":
+                "Rider is not available"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        if order.rider_id and order.rider_id != rider.id:
+            return Response(
+                {"error": "A rider is already assigned to this order"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order.rider = rider
+        order.save(update_fields=["rider"])
+
+        rider.availability_status = False
+        rider.save(update_fields=["availability_status"])
+
+        # Keep delivery tracking status in sync with rider assignment.
+        delivery, created = DeliveryTracking.objects.get_or_create(
+            order=order
+        )
+
+        delivery.status = DeliveryTracking.Status.ASSIGNED
+        delivery.save(update_fields=["status"])
+        serializer = OrderSerializer(order)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+   
+
+
+    @action(detail=True , methods=["patch"] , url_path="start-delivery")
+    def start_delivery(self, request, pk=None):
+        try:
+            order=Order.objects.get(id=pk , rider__user=request.user)
+        except Order.DoesNotExist:
+            return Response(
+                {"error":"Order not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        if order.status != "CONFIRMED":
+            return Response(
+                {"error":"Order is not in confirmed state"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        order.status = "OUT_FOR_DELIVERY"
+        order.save(update_fields=["status"])
+
+        DeliveryTracking.objects.get_or_create(
+            order=order,
+            defaults={"status": DeliveryTracking.Status.PENDING}
+        )
+
+        return Response(
+            {
+            "message":
+            "Delivery started successfully"
+            },
+           status=status.HTTP_200_OK
+    )
+    @action(
+    detail=True,
+    methods=["patch"],
+    url_path="delivered"
+    )
+    def delivered(self, request, pk=None):
+
+        try:
+            order = Order.objects.get(
+            id=pk,
+            rider__user=request.user
+        )
+        except Order.DoesNotExist:
+            return Response(
+            {
+                "error": "Order not found"
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
+        if order.status != "OUT_FOR_DELIVERY":
+            return Response(
+            {
+                "error":
+                "Order is not out for delivery"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # update order status
+
+        order.status = "DELIVERED"
+
+        order.save()
+
+
+
+    # COD payment complete
+
+        if hasattr(order, "payment"):
+
+            payment = order.payment
+
+
+            if payment.payment_method == "COD":
+
+                payment.payment_status = "PAID"
+
+                payment.save()
+
+
+
+    # rider available again
+
+        rider = order.rider
+
+        rider.availability_status = True
+
+        rider.save()
+
+
+
+        return Response(
+        {
+            "message":
+            "Order delivered successfully"
+        },
+        status=status.HTTP_200_OK
+    )
+
+    @action(
+    detail=False,
+    methods=["get"],
+    url_path="my-orders"
+)
+    def my_orders(self, request):
+
+        try:
+            rider = request.user.rider_profile
+
+        except RiderProfile.DoesNotExist:
+
+             return Response(
+            {
+                "error":
+                "You are not a rider"
+            },
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+        orders = Order.objects.filter(
+        rider=rider
+    ).select_related(
+        "user",
+        "rider",
+        "Warehouse"
+    )
+
+        serializer = RiderOrderSerializer(
+        orders,
+        many=True
+    )
+
+        return Response(
+        serializer.data,
+        status=status.HTTP_200_OK
+    )
 
 
 @extend_schema(
@@ -442,196 +772,230 @@ class OrderViewSet(viewsets.ModelViewSet):
 class OrderItemsViewSet(viewsets.ModelViewSet):
     queryset=OrderItem.objects.all()  
     serializer_class=OrderItemSerializers
-    permission_classes = [IsAuthenticated]   
+    permission_classes = [IsAuthenticated]         
+
+
+#           python manage.py runserver
 
 
 
 
-
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def create_payment(request):
-    """
-    Create a payment record for an existing order.
-    """
-
-    order_id = request.data.get("order_id")
-    payment_method = request.data.get("payment_method")
-
-    if not order_id:
-        return Response(
-            {"error": "order_id is required."},
-            status=status.HTTP_400_BAD_REQUEST
+class PaymentViewSet(viewsets.ModelViewSet):
+    serializer_class=PaymentSerializer
+    permission_classes = [IsAuthenticated] 
+    def get_queryset(self):
+        return Payment.objects.filter(
+            order__user=self.request.user
         )
+    @action(detail=False , methods=['post'] , url_path='create-payment')
+    def create_payment(self, request):
 
-    if not payment_method:
-        return Response(
-            {"error": "payment_method is required."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        order_id = request.data.get("order_id")
+        payment_method = request.data.get("payment_method")
 
-    try:
-        order = Order.objects.get(
+        try:
+            order = Order.objects.get(
             id=order_id,
             user=request.user
         )
-    except Order.DoesNotExist:
-        return Response(
-            {"error": "Order not found."},
+
+        except Order.DoesNotExist:
+
+            return Response(
+            {
+                "error":
+                "Order does not exist at this order id"
+            },
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # Prevent duplicate payment records
-    payment, created = Payment.objects.get_or_create(
-        order=order,
-        defaults={
-            "amount": order.total_price,
-            "payment_method": payment_method,
-            "payment_status": Payment.Status.PENDING,
-        }
-    )
 
-    # If payment already exists, update method if still pending
-    if not created and payment.payment_status == Payment.Status.PENDING:
-        payment.payment_method = payment_method
-        payment.amount = order.total_price
-        payment.save(
-            update_fields=[
-                "payment_method",
-                "amount",
-            ]
+        try:
+
+            payment = Payment.objects.get(
+            order=order
         )
 
-    return Response(
-        {
-            "id": payment.id,
-            "order_id": order.id,
-            "amount": str(payment.amount),
-            "payment_method": payment.payment_method,
-            "payment_status": payment.payment_status,
-        },
-        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
-    )
 
+        except Payment.DoesNotExist:
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def stripe_checkout(request, payment_id):
-    """
-    Create Stripe Checkout Session for a payment.
-    """
-
-    try:
-        payment = Payment.objects.select_related("order").get(
-            id=payment_id,
-            order__user=request.user
-        )
-    except Payment.DoesNotExist:
-        return Response(
-            {"error": "Payment not found."},
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    if payment.payment_method != Payment.Method.STRIPE:
-        return Response(
-            {"error": "This payment is not a Stripe payment."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    if payment.payment_status == Payment.Status.PAID:
-        return Response(
-            {"error": "Payment has already been completed."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    try:
-
-        # Reuse existing Stripe session if available
-        if payment.stripe_session_id:
-
-            try:
-                existing_session = stripe.checkout.Session.retrieve(
-                    payment.stripe_session_id
+            if not payment_method:
+                return Response(
+                    {"error": "payment_method is required"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
-                if existing_session.status == "open":
-                    return Response(
-                        {
-                            "checkout_url": existing_session.url
-                        },
-                        status=status.HTTP_200_OK
-                    )
+            payment = Payment.objects.create(
+                order=order,
+                amount=order.total_price,
+                payment_method=payment_method,
+                payment_status=Payment.Status.PENDING
+            )
 
-            except stripe.error.StripeError:
-                pass
+        else:
+            if payment_method and payment.payment_method != payment_method:
+                return Response(
+                    {"error": "A payment already exists for this order with another payment method"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-             
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
+        if payment.payment_method == Payment.Method.COD:
 
-            line_items=[
-        {
-            "price_data": {
-                "currency": payment.currency.lower(),
+            if order.status in ["CANCELLED", "DELIVERED"]:
+                return Response(
+                    {"error": "Payment cannot be created for a cancelled or completed order"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-                "product_data": {
-                    "name": f"Order {payment.order.order_number}",
-                },
+            order.status = "CONFIRMED"
 
-                "unit_amount": int(
-                    payment.amount * 100
-                ),
-            },
+            order.save()
 
-            "quantity": 1,
-        }
-    ],
 
-            mode="payment",
 
-            success_url=(
-        f"{settings.FRONTEND_URL}/order-success"
-        "?session_id={CHECKOUT_SESSION_ID}"
-    ),
+        serializer = PaymentSerializer(payment)
 
-            cancel_url=(
-        f"{settings.FRONTEND_URL}/payment"
-    ),
-
-            metadata={
-        "payment_id": str(payment.id),
-        "order_id": str(payment.order.id),
-    },
-)
-
-        payment.stripe_session_id = session.id
-        payment.save(update_fields=["stripe_session_id"])
-        return Response(
-           {
-               "checkout_url": session.url,
-               "session_id": session.id,
-            },
-            status=status.HTTP_200_OK
-        )
-
-    except stripe.error.StripeError as e:
 
         return Response(
+        serializer.data,
+        status=status.HTTP_200_OK
+    )
+
+
+    @action(detail=True,methods=["post"],url_path="stripe-checkout")
+    def stripe_checkout(self, request, pk=None):
+        payment=self.get_object()
+        if payment.payment_method != Payment.Method.STRIPE:
+            return Response(
             {
-                "error": str(e)
+                "error":
+                "This payment is not Stripe"
             },
             status=status.HTTP_400_BAD_REQUEST
         )
+        if payment.payment_status == Payment.Status.PAID:
+            return Response(
+            {
+                "error":
+                "Payment already completed"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )  
+        
+        stripe.api_key = settings.STRIPE_SECRET_KEY   
+        session = stripe.checkout.Session.create(
+            payment_method_types=[
+                "card"
+            ],
 
 
+            line_items=[
+                {
+                "price_data": {
+
+                    "currency":
+                    payment.currency.lower(),
+
+
+                    "product_data": {
+
+                        "name":
+                        payment.order.order_number
+
+                    },
+
+
+                    "unit_amount":
+
+                    int(payment.amount * 100),
+
+                },
+
+                "quantity": 1,
+
+            }
+        ],
+
+
+        mode="payment",
+
+
+        # success_url=
+        # "http://localhost:5173/payment-success",
+        success_url=(
+        f"http://localhost:5173/payment-success"
+        f"?payment_id={payment.id}"
+        ),
+
+
+        cancel_url=
+        "http://localhost:5173/payment-failed",
+
+    )
+        payment.stripe_session_id = session.id
+        payment.save()
+        return Response(
+        {
+            "checkout_url":
+            session.url
+        },
+        status=status.HTTP_200_OK
+    )
+    @action(detail=True , methods=['PATCH'] , url_path="success")
+    def payment_succcess(self , request , pk=None):
+        payment=self.get_object()
+        if payment.payment_status == Payment.Status.PAID:
+            return Response(
+            {
+                "error": "Payment already completed"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        payment.payment_status = Payment.Status.PAID
+        payment.transaction_id = request.data.get("transaction_id",payment.transaction_id)
+
+        payment.save()
+
+        order = payment.order
+        order.status = "CONFIRMED"
+        order.save()
+        return Response(
+        {
+            "message":
+            "Payment successful"
+        },
+        status=status.HTTP_200_OK
+    )
+    @action(detail=True, methods=["patch"], url_path="failed")
+    def payment_failed(self, request, pk=None):
+        payment = self.get_object()
+        if payment.payment_status == Payment.Status.PAID:
+            return Response(
+            {
+                "error": "Paid payment cannot be marked as failed"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        if payment.payment_status == Payment.Status.FAILED:
+            return Response(
+            {
+                "error": "Payment already failed"
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        payment.payment_status = Payment.Status.FAILED
+        payment.save()
+        return Response(
+            {
+                "message": "Payment failed"
+        },
+        status=status.HTTP_200_OK
+    )
+        
+
+@csrf_exempt
 @api_view(["POST"])
-@permission_classes([])
 def stripe_webhook(request):
-    """
-    Stripe webhook endpoint.
-    """
 
     payload = request.body
 
@@ -639,120 +1003,111 @@ def stripe_webhook(request):
         "HTTP_STRIPE_SIGNATURE"
     )
 
-    webhook_secret = settings.STRIPE_WEBHOOK_SECRET
-
     try:
 
         event = stripe.Webhook.construct_event(
             payload,
+
             sig_header,
-            webhook_secret
+
+            settings.STRIPE_WEBHOOK_SECRET
+
         )
+
 
     except ValueError:
 
         return HttpResponse(
-            "Invalid payload",
             status=400
         )
+
 
     except stripe.error.SignatureVerificationError:
 
         return HttpResponse(
-            "Invalid signature",
             status=400
         )
 
-    # Payment completed
+
+
     if event["type"] == "checkout.session.completed":
 
+
         session = event["data"]["object"]
 
-        payment_id = session.get("metadata", {}).get(
-            "payment_id"
-        )
 
-        order_id = session.get("metadata", {}).get(
-            "order_id"
-        )
+        session_id = session["id"]
 
-        if payment_id:
 
-            try:
+        try:
 
-                payment = Payment.objects.get(
-                    id=payment_id
-                )
+            payment = Payment.objects.get(
 
+                stripe_session_id=session_id
+
+            )
+
+            if payment.payment_status != Payment.Status.PAID:
                 payment.payment_status = Payment.Status.PAID
 
-                payment.transaction_id = session.get(
-                    "payment_intent"
+                payment.transaction_id = session[
+                "payment_intent"
+            ]
+
+                payment.save()
+
+
+
+                order = payment.order
+
+                order.status = "CONFIRMED"
+
+                order.save()
+                print("CREATING DELIVERY TRACKING")
+                DeliveryTracking.objects.get_or_create(
+                    order=order,
+                    defaults={
+                        "status":
+                        DeliveryTracking.Status.PENDING
+                    }
                 )
-
-                payment.save(
-                    update_fields=[
-                        "payment_status",
-                        "transaction_id",
-                    ]
-                )
-
-                # Confirm order after successful Stripe payment
-                if order_id:
-
-                    try:
-
-                        order = Order.objects.get(
-                            id=order_id
+                Notification.objects.create(
+                    user=order.user,
+                    title="Payment Successful",
+                    message=(
+                        f"Payment received for "
+                        f"order {order.order_number}."
                         )
-
-                        if order.status == "PENDING":
-                            order.status = "CONFIRMED"
-                            order.save(
-                                update_fields=["status"]
-                            )
-
-                    except Order.DoesNotExist:
-                        pass
-
-            except Payment.DoesNotExist:
-                pass
-
-    # Payment failed
-    elif event["type"] == "checkout.session.async_payment_failed":
-
-        session = event["data"]["object"]
-
-        payment_id = session.get("metadata", {}).get(
-            "payment_id"
-        )
-
-        if payment_id:
-
-            try:
-
-                payment = Payment.objects.get(
-                    id=payment_id
                 )
-
-                payment.payment_status = Payment.Status.FAILED
-
-                payment.save(
-                    update_fields=["payment_status"]
+                send_email_notification(
+                    order.user.email,
+                    "Payment Successful",
+                    f"""
+                    Your payment is confirmed.
+                    Order:
+                    {order.order_number}
+                    Amount:
+                    {payment.amount}
+                    Transaction:
+                   {payment.transaction_id}
+                   """
                 )
+        except Payment.DoesNotExist:
+            print(
+                "PAYMENT NOT FOUND",session_id)
+            if event["type"] == "checkout.session.completed":
 
-            except Payment.DoesNotExist:
-                pass
+                print("STRIPE PAYMENT COMPLETED EVENT AYA")
+
 
     return HttpResponse(
-        "Webhook received",
         status=200
     )
+           
 
+            
 
-#           python manage.py runserver
-
-
+     
 
 
 

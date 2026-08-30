@@ -177,7 +177,7 @@ Do NOT save temporary conversation content.
         print("=" * 60)
 
         return {
-            "memory": result
+            "memory_result": None
         }
 
     except Exception as e:
