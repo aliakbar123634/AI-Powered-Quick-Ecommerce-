@@ -168,19 +168,7 @@ const Register = () => {
 
             >
 
-                {/* {
 
-                    message && (
-
-                        <div className="mb-5 rounded-xl bg-red-100 text-red-700 px-4 py-3">
-
-                            {message}
-
-                        </div>
-
-                    )
-
-                } */}
 
                 {
     message && (

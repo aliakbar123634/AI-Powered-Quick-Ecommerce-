@@ -1,18 +1,3 @@
-// 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React from "react";
 
 const UserProfileCard = ({ user }) => {

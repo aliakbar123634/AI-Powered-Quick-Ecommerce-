@@ -26,11 +26,7 @@ const Products = () => {
 
   const [priceRange, setPriceRange] = useState([0, 1000]);
 
-  // URL se search query read karo
-  // useEffect(() => {
-  //   const searchQuery = searchParams.get("search") || "";
-  //   setSearch(searchQuery);
-  // }, [searchParams]);
+
 
   useEffect(() => {
   const searchQuery = searchParams.get("search") || "";

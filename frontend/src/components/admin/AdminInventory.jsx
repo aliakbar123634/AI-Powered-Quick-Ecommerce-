@@ -1,25 +1,3 @@
-// import React from "react";
-
-// const AdminInventory = () => {
-
-//   return (
-//     <div>
-
-//       <h1 className="text-3xl font-bold">
-//         Inventory
-//       </h1>
-
-//       <p className="text-gray-500 mt-2">
-//         Manage warehouse inventory and stock levels.
-//       </p>
-
-//     </div>
-//   );
-// };
-
-// export default AdminInventory;
-
-
 
 
 import React, { useEffect, useMemo, useState } from "react";

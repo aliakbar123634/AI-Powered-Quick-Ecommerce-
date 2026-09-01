@@ -4,9 +4,6 @@ import {
     Send,
     User,
     Sparkles,
-    ShoppingBag,
-    Search,
-    Package,
     Brain,
     Zap,
 } from "lucide-react";
@@ -76,33 +73,6 @@ const AIChat = () => {
         }
     };
 
-    const quickPrompts = [
-        {
-            icon: Search,
-            text: "Find organic honey",
-        },
-        {
-            icon: Sparkles,
-            text: "Recommend me some products",
-        },
-        {
-            icon: Package,
-            text: "Check my product stock",
-        },
-        {
-            icon: ShoppingBag,
-            text: "What's in my cart?",
-        },
-    ];
-
-    const handleQuickPrompt = (text) => {
-        if (loading) {
-            return;
-        }
-
-        setInput(text);
-    };
-
     return (
         <div className="min-h-screen bg-[#070b14] text-white flex flex-col overflow-hidden">
 
@@ -133,7 +103,7 @@ const AIChat = () => {
 
                         <div className="flex items-center gap-1.5 text-xs text-gray-400">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            Online ΓÇó Shopping Assistant
+                            Online • Shopping Assistant
                         </div>
                     </div>
                 </div>
@@ -157,6 +127,7 @@ const AIChat = () => {
                         <section className="mb-8 rounded-3xl border border-white/10 bg-gradient-to-br from-[#11172a] via-[#0d1324] to-[#120d20] overflow-hidden relative shadow-2xl">
 
                             <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/20 blur-[80px] rounded-full" />
+
                             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-600/10 blur-[80px] rounded-full" />
 
                             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8 p-6 sm:p-8 lg:p-10">
@@ -179,11 +150,12 @@ const AIChat = () => {
 
                                     <p className="mt-4 text-gray-400 text-sm sm:text-base leading-relaxed max-w-xl">
                                         Search products, discover intelligent recommendations,
-                                        check prices and stock, and manage your shopping ΓÇö
+                                        check prices and stock, and manage your shopping —
                                         all through one AI agent.
                                     </p>
 
                                     <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-2">
+
                                         <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
                                             Product Search
                                         </span>
@@ -199,6 +171,7 @@ const AIChat = () => {
                                         <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
                                             Cart Management
                                         </span>
+
                                     </div>
                                 </div>
 
@@ -217,9 +190,10 @@ const AIChat = () => {
 
                                     <div className="relative -mt-4 px-4 py-2 rounded-full bg-white text-gray-900 text-xs font-bold shadow-xl flex items-center gap-2">
                                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        Einstein Ali ΓÇó AI Agent
+                                        Einstein Ali • AI Agent
                                     </div>
                                 </div>
+
                             </div>
                         </section>
                     )}
@@ -228,6 +202,7 @@ const AIChat = () => {
                     <div className="space-y-5 pb-6">
 
                         {messages.map((message, index) => {
+
                             const isUser = message.role === "user";
 
                             return (
@@ -235,6 +210,7 @@ const AIChat = () => {
                                     key={index}
                                     className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                                 >
+
                                     <div
                                         className={`flex items-end gap-3 max-w-[92%] sm:max-w-[78%] ${
                                             isUser ? "flex-row-reverse" : ""
@@ -249,6 +225,7 @@ const AIChat = () => {
                                                     : "border border-purple-400/40 shadow-lg shadow-purple-500/20"
                                             }`}
                                         >
+
                                             {isUser ? (
                                                 <User size={19} />
                                             ) : (
@@ -258,15 +235,18 @@ const AIChat = () => {
                                                     className="w-full h-full object-cover object-top"
                                                 />
                                             )}
+
                                         </div>
 
                                         {/* Message */}
                                         <div>
+
                                             {!isUser && (
                                                 <div className="flex items-center gap-2 mb-1.5 ml-1">
                                                     <span className="text-xs font-semibold text-purple-300">
                                                         Einstein Ali
                                                     </span>
+
                                                     <span className="text-[10px] text-gray-600">
                                                         AI Agent
                                                     </span>
@@ -282,8 +262,11 @@ const AIChat = () => {
                                             >
                                                 {message.content}
                                             </div>
+
                                         </div>
+
                                     </div>
+
                                 </div>
                             );
                         })}
@@ -301,6 +284,7 @@ const AIChat = () => {
                                 </div>
 
                                 <div>
+
                                     <div className="text-xs font-semibold text-purple-300 mb-1.5 ml-1">
                                         Einstein Ali
                                     </div>
@@ -316,36 +300,21 @@ const AIChat = () => {
                                         <span className="text-xs text-gray-400">
                                             Einstein is thinking...
                                         </span>
+
                                     </div>
                                 </div>
+
                             </div>
                         )}
+
                     </div>
                 </div>
             </main>
 
             {/* INPUT AREA */}
             <div className="shrink-0 border-t border-white/10 bg-[#090e1a]/95 backdrop-blur-xl px-4 sm:px-6 py-4 z-20">
+
                 <div className="max-w-4xl mx-auto">
-
-                    {/* QUICK PROMPTS */}
-                    <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
-                        {quickPrompts.map((prompt, index) => {
-                            const Icon = prompt.icon;
-
-                            return (
-                                <button
-                                    key={index}
-                                    onClick={() => handleQuickPrompt(prompt.text)}
-                                    disabled={loading}
-                                    className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-purple-500/10 hover:border-purple-400/30 text-xs text-gray-300 hover:text-white transition disabled:opacity-40"
-                                >
-                                    <Icon size={14} className="text-purple-400" />
-                                    {prompt.text}
-                                </button>
-                            );
-                        })}
-                    </div>
 
                     {/* INPUT */}
                     <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-[#111827] border border-white/10 focus-within:border-purple-500/50 focus-within:shadow-[0_0_30px_rgba(139,92,246,0.12)] transition">
@@ -376,14 +345,17 @@ const AIChat = () => {
                         >
                             <Send size={19} />
                         </button>
+
                     </div>
 
                     <div className="flex items-center justify-center gap-2 mt-2 text-[10px] sm:text-xs text-gray-600">
                         <Sparkles size={11} />
                         Einstein Ali can search products, recommend items and manage your shopping.
                     </div>
+
                 </div>
             </div>
+
         </div>
     );
 };

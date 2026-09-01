@@ -1,8 +1,3 @@
-# 
-
-
-
-
 import os
 
 from langchain_groq import ChatGroq
@@ -33,5 +28,3 @@ def _build_llm():
 
 llm = _build_llm()
 
-print("MODEL:", settings.MODEL_NAME)
-print("LLM:", llm)

@@ -57,13 +57,7 @@ def chat(
     access_token: str = Depends(get_access_token)
 ):
 
-    print("\n" + "=" * 60)
-    print("CHAT REQUEST")
-    print("=" * 60)
 
-    print("Message:", request.message)
-    print("Token received:", access_token)
-    print("Token length:", len(access_token) if access_token else 0)
 
     thread_id = access_token
 
@@ -94,9 +88,7 @@ def chat(
     print("FINAL RESPONSE:")
     print(result["messages"][-1].content)
 
-    # return {
-    #     "response": result["messages"][-1].content
-    # }
+
     final_response = result["messages"][-1].content
 
     if not isinstance(final_response, str):

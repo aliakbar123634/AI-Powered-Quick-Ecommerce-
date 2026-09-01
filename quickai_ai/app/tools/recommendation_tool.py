@@ -10,7 +10,8 @@ from app.core.config import settings
 @tool
 def recommend_products(
     query: str,
-    search_type: Literal["category", "product"]
+    search_type: Literal["category", "product"],
+    budget: float | None = None
 ):
     """
     Recommend products based on either a category or a specific product.
@@ -28,6 +29,7 @@ def recommend_products(
             params={
                 "search": query,
                 "type": search_type,
+                "budget": budget,
             },
             timeout=10
         )

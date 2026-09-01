@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-// import AuthLayout from "../../components/auth/AuthLayout";
-// import AuthCard from "../../components/auth/AuthCard";
-// import Input from "../../components/auth/Input";
-// import PrimaryButton from "../../components/auth/PrimaryButton";
-
-// import { forgotPassword } from "../../api/auth";
-
 import AuthLayout from "../components/auth/AuthLayout";
 import AuthCard from "../components/auth/AuthCard";
 import PasswordInput from "../components/PasswordInput";

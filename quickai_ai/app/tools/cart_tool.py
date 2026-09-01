@@ -21,17 +21,7 @@ def add_to_cart(
     Never guess a product ID.
     """
 
-    print("\n" + "=" * 60)
-    print("ADD TO CART TOOL")
-    print("=" * 60)
 
-    print("Product ID:", product_id)
-    print("Quantity:", quantity)
-
-    print("Token received:")
-    print(token)
-
-    print("Token length:", len(token) if token else 0)
 
     url = f"{settings.BACKEND_BASE_URL}/api/orders/cart/add/"
 
@@ -52,23 +42,16 @@ def add_to_cart(
             timeout=10,
         )
 
-        print("Django Status:", response.status_code)
-        print("Django Response:", response.text)
+
 
         response.raise_for_status()
 
-        print("ADD TO CART SUCCESS")
-        print("=" * 60)
 
         return "Product added to cart successfully."
 
     except requests.RequestException as e:
 
-        print("\n" + "=" * 60)
-        print("ADD TO CART FAILED")
-        print("=" * 60)
 
-        print("Exception:", str(e))
 
         if e.response is not None:
 

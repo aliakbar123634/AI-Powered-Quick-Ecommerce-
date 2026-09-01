@@ -32,11 +32,7 @@ def save_memory(key:str , value: str ,token: Annotated[str, InjectedState("acces
         response.raise_for_status()
         return "Memory saved successfully."
     except requests.RequestException as e:
-        print(e)
 
-        if e.response:
-            print(e.response.status_code)
-            print(e.response.text)
 
         return "Failed to save memory."    
 
@@ -74,11 +70,6 @@ def recall_memory(
 
     except requests.RequestException as e:
 
-        print("Memory recall error:", e)
-
-        if e.response:
-            print("Status:", e.response.status_code)
-            print("Response:", e.response.text)
 
         return None        
 

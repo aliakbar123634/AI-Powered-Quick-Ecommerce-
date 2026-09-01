@@ -23,35 +23,6 @@ const PasswordInput = ({
             </label>
 
             <div className="relative">
-
-                {/* <input
-
-                    type={showPassword ? "text" : "password"}
-
-                    placeholder={placeholder}
-
-                    value={value}
-
-                    onChange={onChange}
-
-                    className={`
-                        w-full
-                        border
-                        rounded-xl
-                        px-4
-                        py-3
-                        pr-12
-                        outline-none
-                        transition
-
-                        ${
-                            error
-                                ? "border-red-500 focus:ring-2 focus:ring-red-300"
-                                : "border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                        }
-                    `}
-                /> */}
-
                 <input
 
     type={showPassword ? "text" : "password"}

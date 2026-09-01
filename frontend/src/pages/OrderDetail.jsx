@@ -30,20 +30,7 @@ const OrderDetail = () => {
 
     fetchOrder();
   }, [id]);
-  // const handleCancelOrder=async (id)=>{
-  //   try {
-  //     const response = await cancelOrder(id);
 
-  //     console.log(response.data);
-
-  //     alert(response.data.message);
-  //   } catch (error) {
-  //   console.log(error);
-  //   if (error.response) {
-  //   alert(error.response.data.error);
-  // }
-  //   }
-  // }
      const handleCancelOrder = async (id) => {
   try {
     const response = await cancelOrder(id);

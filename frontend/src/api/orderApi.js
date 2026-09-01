@@ -26,20 +26,14 @@ export const getOrderDetail = (id) =>
 export const cancelOrder = (orderId) =>
   API.patch(`orders/order/${orderId}/cancel/`);
 
-
-
-
 export const getAddresses = () =>
   API.get("accounts/addresses/");
-
-
-
 
 
 export const createPayment = (data) => {
 
   return API.post(
-    // "/payments/payment/create-payment/",
+    
     "orders/payment/create-payment/",
     data
   );
@@ -48,7 +42,6 @@ export const createPayment = (data) => {
 
 export const stripeCheckout = (id) =>
   API.post(
-    // `orders/payment/${id}/stripe-checkout/`
     `orders/payment/${id}/stripe-checkout/`
   );
 

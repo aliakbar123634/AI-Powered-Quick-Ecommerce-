@@ -1,23 +1,4 @@
-// import React from "react";
 
-// const AdminRiders = () => {
-
-//   return (
-//     <div>
-
-//       <h1 className="text-3xl font-bold">
-//         Riders
-//       </h1>
-
-//       <p className="text-gray-500 mt-2">
-//         Manage riders and their availability.
-//       </p>
-
-//     </div>
-//   );
-// };
-
-// export default AdminRiders;
 
 import React, { useEffect, useState } from "react";
 import {
