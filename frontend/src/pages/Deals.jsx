@@ -3,10 +3,10 @@ import { dealProducts } from "../api/productApi";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer/Footer";
 import DealsHero from "../components/Deals/DealsHero";
-import DealsCountdown from "../components/deals/DealsCountdown";
-import FeaturedDeals from "../components/deals/FeaturedDeals";
-import TopRatedDeals from "../components/deals/TopRatedDeals";
-import BottomOfferBanner from "../components/deals/BottomOfferBanner";
+import DealsCountdown from "../components/Deals/DealsCountdown";
+import FeaturedDeals from "../components/Deals/FeaturedDeals";
+import TopRatedDeals from "../components/Deals/TopRatedDeals";
+import BottomOfferBanner from "../components/Deals/BottomOfferBanner";
 const Deals = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
