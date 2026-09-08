@@ -1,6 +1,7 @@
 ﻿import axios from "axios";
 
-const AI_API_URL = "http://127.0.0.1:8001";
+// const AI_API_URL = "http://127.0.0.1:8001";
+const AI_API_URL = import.meta.env.VITE_AI_API_URL;
 
 export const sendMessageToAI = async (message) => {
     const token = localStorage.getItem("access");
