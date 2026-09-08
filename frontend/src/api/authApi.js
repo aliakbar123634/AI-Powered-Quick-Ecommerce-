@@ -2,19 +2,31 @@ import API from "./api";
 import axios from "axios";
 
 // Register
+// export const registerUser = (data) =>
+//   axios.post(
+//     "http://127.0.0.1:8000/api/accounts/register/",
+//     data
+//   );
+
 export const registerUser = (data) =>
-  axios.post(
-    "http://127.0.0.1:8000/api/accounts/register/",
+  API.post(
+    "accounts/register/",
     data
   );
 
 // Login
+// export const loginUser = (data) =>
+//   axios.post(
+//     "http://127.0.0.1:8000/api/accounts/login/",
+//     data
+//   );
+
 export const loginUser = (data) =>
-  axios.post(
-    "http://127.0.0.1:8000/api/accounts/login/",
+  API.post(
+    "accounts/login/",
     data
   );
-
+  
 // Logout
 export const logoutUser = () =>
   API.post("accounts/logout/");
