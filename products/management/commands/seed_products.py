@@ -1,1677 +1,464 @@
-# from django.core.management.base import BaseCommand
-# from django.core.files.base import ContentFile
-
-# from products.models import (
-#     Category,
-#     Product,
-#     ProductImage,
-#     Review,
-# )
-
-# from decimal import Decimal
-# from io import BytesIO
-
-# import random
-
-# try:
-#     from PIL import Image, ImageDraw, ImageFont
-# except ImportError:
-#     Image = None
-
-
-# class Command(BaseCommand):
-
-#     help = "Create realistic testing data for Quick Ecommerce"
-
-#     def add_arguments(self, parser):
-
-#         parser.add_argument(
-#             "--count",
-#             type=int,
-#             default=200,
-#             help="Number of products to create",
-#         )
-
-#         parser.add_argument(
-#             "--clear",
-#             action="store_true",
-#             help="Delete existing categories and products first",
-#         )
-
-#     def handle(self, *args, **options):
-
-#         count = options["count"]
-#         clear = options["clear"]
-
-#         self.stdout.write(
-#             self.style.WARNING(
-#                 f"Creating {count} test products..."
-#             )
-#         )
-
-#         # ============================================================
-#         # CLEAR OLD DATA
-#         # ============================================================
-
-#         if clear:
-
-#             self.stdout.write(
-#                 self.style.WARNING(
-#                     "Deleting old product testing data..."
-#                 )
-#             )
-
-#             Review.objects.all().delete()
-#             ProductImage.objects.all().delete()
-#             Product.objects.all().delete()
-#             Category.objects.all().delete()
-
-#         # ============================================================
-#         # CATEGORIES
-#         # ============================================================
-
-#         categories_data = [
-
-#             {
-#                 "name": "Books & Stationery",
-#                 "description": "Books, notebooks, stationery and office essentials.",
-#             },
-
-#             {
-#                 "name": "Electronics",
-#                 "description": "Modern electronics, gadgets and accessories.",
-#             },
-
-#             {
-#                 "name": "Groceries",
-#                 "description": "Fresh groceries and everyday food essentials.",
-#             },
-
-#             {
-#                 "name": "Beauty",
-#                 "description": "Beauty, skincare and personal care products.",
-#             },
-
-#             {
-#                 "name": "Home & Kitchen",
-#                 "description": "Useful products for your home and kitchen.",
-#             },
-
-#             {
-#                 "name": "Fashion",
-#                 "description": "Fashion products, clothing and accessories.",
-#             },
-
-#             {
-#                 "name": "Sports",
-#                 "description": "Sports and fitness equipment.",
-#             },
-
-#             {
-#                 "name": "Health",
-#                 "description": "Everyday health and wellness products.",
-#             },
-
-#         ]
-
-#         categories = []
-
-#         for category_data in categories_data:
-
-#             category, created = Category.objects.get_or_create(
-#                 name=category_data["name"],
-#                 defaults={
-#                     "description": category_data["description"]
-#                 }
-#             )
-
-#             categories.append(category)
-
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 f"Categories ready: {len(categories)}"
-#             )
-#         )
-
-#         # ============================================================
-#         # PRODUCT DATA
-#         # ============================================================
-
-#         product_templates = [
-
-#             # BOOKS
-#             {
-#                 "category": "Books & Stationery",
-#                 "names": [
-#                     "Professional Book Set",
-#                     "Professional Notebook Set",
-#                     "Professional Office Notebook",
-#                     "Professional Writing Notebook",
-#                     "Professional Journal Set",
-#                     "Business Management Book",
-#                     "Python Programming Book",
-#                     "Django REST Framework Book",
-#                     "Artificial Intelligence Book",
-#                     "Machine Learning Handbook",
-#                     "Data Structures Book",
-#                     "Algorithms Complete Guide",
-#                     "Software Engineering Book",
-#                     "Computer Science Handbook",
-#                     "Student Notebook Pack",
-#                     "Premium Diary",
-#                     "Office Stationery Set",
-#                     "A4 Writing Notebook",
-#                     "Premium Planner",
-#                     "Study Notes Notebook",
-#                 ],
-#             },
-
-#             # ELECTRONICS
-#             {
-#                 "category": "Electronics",
-#                 "names": [
-#                     "Wireless Bluetooth Headphones",
-#                     "Professional Noise Cancelling Headphones",
-#                     "Wireless Mouse",
-#                     "Mechanical Keyboard",
-#                     "USB Type C Cable",
-#                     "Fast Charging Adapter",
-#                     "Power Bank 20000mAh",
-#                     "Smart Watch",
-#                     "Bluetooth Speaker",
-#                     "Portable Bluetooth Speaker",
-#                     "LED Desk Lamp",
-#                     "USB Hub",
-#                     "Laptop Stand",
-#                     "Webcam HD",
-#                     "Wireless Earbuds",
-#                     "Gaming Headset",
-#                     "Phone Holder",
-#                     "Smart LED Bulb",
-#                     "Portable SSD",
-#                     "Laptop Cooling Pad",
-#                 ],
-#             },
-
-#             # GROCERIES
-#             {
-#                 "category": "Groceries",
-#                 "names": [
-#                     "Premium Milk",
-#                     "Fresh Organic Apples",
-#                     "Fresh Bananas",
-#                     "Whole Wheat Bread",
-#                     "Premium Coffee",
-#                     "Green Tea",
-#                     "Organic Honey",
-#                     "Basmati Rice",
-#                     "Cooking Oil",
-#                     "Organic Oats",
-#                     "Corn Flakes",
-#                     "Chocolate Cookies",
-#                     "Fresh Orange Juice",
-#                     "Mineral Water",
-#                     "Premium Pasta",
-#                     "Tomato Ketchup",
-#                     "Peanut Butter",
-#                     "Mixed Nuts",
-#                     "Organic Dates",
-#                     "Breakfast Cereal",
-#                 ],
-#             },
-
-#             # BEAUTY
-#             {
-#                 "category": "Beauty",
-#                 "names": [
-#                     "Face Wash",
-#                     "Vitamin C Face Serum",
-#                     "Moisturizing Cream",
-#                     "Daily Sunscreen",
-#                     "Hair Shampoo",
-#                     "Conditioner",
-#                     "Hair Oil",
-#                     "Body Lotion",
-#                     "Lip Balm",
-#                     "Face Moisturizer",
-#                     "Cleansing Foam",
-#                     "Skin Care Kit",
-#                     "Beauty Brush Set",
-#                     "Makeup Organizer",
-#                     "Hand Cream",
-#                     "Body Wash",
-#                     "Hair Mask",
-#                     "Anti Dandruff Shampoo",
-#                     "Aloe Vera Gel",
-#                     "Premium Beauty Kit",
-#                 ],
-#             },
-
-#             # HOME
-#             {
-#                 "category": "Home & Kitchen",
-#                 "names": [
-#                     "Coffee Mug",
-#                     "Stainless Steel Water Bottle",
-#                     "Kitchen Knife Set",
-#                     "Non Stick Frying Pan",
-#                     "Dinner Plate Set",
-#                     "Glass Storage Container",
-#                     "Electric Kettle",
-#                     "Kitchen Organizer",
-#                     "Storage Box",
-#                     "Bedsheet Set",
-#                     "Pillow Cover Set",
-#                     "Table Lamp",
-#                     "Wall Clock",
-#                     "Laundry Basket",
-#                     "Vacuum Cleaner",
-#                     "Kitchen Scale",
-#                     "Cutlery Set",
-#                     "Food Storage Box",
-#                     "Air Freshener",
-#                     "Premium Kitchen Set",
-#                 ],
-#             },
-
-#             # FASHION
-#             {
-#                 "category": "Fashion",
-#                 "names": [
-#                     "Classic T Shirt",
-#                     "Premium Cotton Shirt",
-#                     "Casual Jeans",
-#                     "Sports Jacket",
-#                     "Men Wallet",
-#                     "Leather Belt",
-#                     "Running Shoes",
-#                     "Casual Sneakers",
-#                     "Fashion Backpack",
-#                     "Travel Backpack",
-#                     "Baseball Cap",
-#                     "Winter Hoodie",
-#                     "Premium Socks Pack",
-#                     "Classic Sunglasses",
-#                     "Leather Handbag",
-#                     "Casual Watch",
-#                     "Formal Shoes",
-#                     "Denim Jacket",
-#                     "Cotton Polo Shirt",
-#                     "Premium Fashion Set",
-#                 ],
-#             },
-
-#             # SPORTS
-#             {
-#                 "category": "Sports",
-#                 "names": [
-#                     "Football",
-#                     "Cricket Bat",
-#                     "Cricket Ball",
-#                     "Tennis Racket",
-#                     "Badminton Racket",
-#                     "Yoga Mat",
-#                     "Gym Gloves",
-#                     "Resistance Bands",
-#                     "Skipping Rope",
-#                     "Water Bottle Sports",
-#                     "Running Shoes Sports",
-#                     "Fitness Tracker",
-#                     "Dumbbell Set",
-#                     "Exercise Mat",
-#                     "Sports Backpack",
-#                     "Cycling Gloves",
-#                     "Football Shoes",
-#                     "Training Cone Set",
-#                     "Sports Towel",
-#                     "Fitness Kit",
-#                 ],
-#             },
-
-#             # HEALTH
-#             {
-#                 "category": "Health",
-#                 "names": [
-#                     "Digital Thermometer",
-#                     "First Aid Kit",
-#                     "Vitamin Organizer",
-#                     "Pill Storage Box",
-#                     "Heating Pad",
-#                     "Reusable Ice Pack",
-#                     "Digital Weighing Scale",
-#                     "Blood Pressure Monitor",
-#                     "Sleep Mask",
-#                     "Travel Health Kit",
-#                     "Personal Care Kit",
-#                     "Hand Sanitizer",
-#                     "Face Mask Pack",
-#                     "Health Monitoring Watch",
-#                     "Wellness Kit",
-#                     "Eye Mask",
-#                     "Medicine Organizer",
-#                     "Portable Humidifier",
-#                     "Massage Ball",
-#                     "Health Essentials Kit",
-#                 ],
-#             },
-
-#         ]
-
-#         brands = [
-#             "QuickAI",
-#             "ProMax",
-#             "Nova",
-#             "SmartTech",
-#             "PremiumChoice",
-#             "DailyLife",
-#             "Ultra",
-#             "EcoLife",
-#             "NextGen",
-#             "HomePro",
-#             "TechZone",
-#             "Prime",
-#         ]
-
-#         units = [
-#             "piece",
-#             "pack",
-#             "box",
-#             "kg",
-#             "liter",
-#             "set",
-#         ]
-
-#         category_map = {
-#             category.name: category
-#             for category in categories
-#         }
-
-#         # ============================================================
-#         # CREATE PRODUCTS
-#         # ============================================================
-
-#         created_products = []
-
-#         for i in range(count):
-
-#             template = random.choice(product_templates)
-
-#             product_name = random.choice(
-#                 template["names"]
-#             )
-
-#             # Ensure unique product names
-#             product_name = f"{product_name} {i + 1}"
-
-#             category = category_map[
-#                 template["category"]
-#             ]
-
-#             price = Decimal(
-#                 random.randint(150, 15000)
-#             )
-
-#             # About 65% products have discount
-#             if random.random() < 0.65:
-
-#                 discount_percent = random.randint(
-#                     5,
-#                     40
-#                 )
-
-#                 discount_price = (
-#                     price
-#                     - (
-#                         price
-#                         * Decimal(discount_percent)
-#                         / Decimal("100")
-#                     )
-#                 ).quantize(
-#                     Decimal("0.01")
-#                 )
-
-#             else:
-
-#                 discount_price = None
-
-#             product = Product(
-
-#                 category=category,
-
-#                 name=product_name,
-
-#                 description=(
-#                     f"{product_name} is a high quality "
-#                     f"product available at QuickAI. "
-#                     f"Perfect for everyday use with "
-#                     f"excellent value and reliable quality."
-#                 ),
-
-#                 brand=random.choice(brands),
-
-#                 price=price,
-
-#                 discount_price=discount_price,
-
-#                 weight=Decimal(
-#                     random.randint(50, 5000)
-#                 ),
-
-#                 unit=random.choice(units),
-
-#                 stock_status=random.random() > 0.15,
-
-#                 is_active=random.random() > 0.05,
-
-#                 # IMPORTANT:
-#                 # Do not generate fake semantic embeddings.
-#                 embedding=None,
-#             )
-
-#             product.save()
-
-#             # ========================================================
-#             # PRODUCT IMAGE
-#             # ========================================================
-
-#             image_file = self.create_image(
-#                 product.name
-#             )
-
-#             product.image.save(
-#                 f"product-{product.id}.jpg",
-#                 image_file,
-#                 save=True
-#             )
-
-#             # ========================================================
-#             # EXTRA PRODUCT IMAGE
-#             # ========================================================
-
-#             second_image_file = self.create_image(
-#                 product.name,
-#                 variant=True
-#             )
-
-#             ProductImage.objects.create(
-
-#                 product=product,
-
-#                 image=second_image_file,
-
-#                 is_primary=False,
-#             )
-
-#             # ========================================================
-#             # PRIMARY PRODUCT IMAGE
-#             # ========================================================
-
-#             primary_image_file = self.create_image(
-#                 product.name,
-#                 variant=True
-#             )
-
-#             ProductImage.objects.create(
-
-#                 product=product,
-
-#                 image=primary_image_file,
-
-#                 is_primary=True,
-#             )
-
-#             created_products.append(product)
-
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 f"Products created: {len(created_products)}"
-#             )
-#         )
-
-#         # ============================================================
-#         # CREATE REVIEWS
-#         # ============================================================
-
-#         review_names = [
-#             "Ali",
-#             "Ahmed",
-#             "Usman",
-#             "Hamza",
-#             "Hassan",
-#             "Bilal",
-#             "Sarah",
-#             "Ayesha",
-#             "Fatima",
-#             "John",
-#             "Michael",
-#             "Emma",
-#         ]
-
-#         review_comments = [
-#             "Excellent product. Really happy with the quality.",
-#             "Good quality and fast delivery.",
-#             "Product is exactly as described.",
-#             "Very useful product. Recommended.",
-#             "Good value for money.",
-#             "Quality is better than expected.",
-#             "I really like this product.",
-#             "Fast delivery and good packaging.",
-#             "Amazing product for the price.",
-#             "Would definitely buy again.",
-#         ]
-
-#         reviews = []
-
-#         for product in created_products:
-
-#             # 0-5 reviews per product
-#             review_count = random.randint(
-#                 0,
-#                 5
-#             )
-
-#             for _ in range(review_count):
-
-#                 reviews.append(
-#                     Review(
-#                         product=product,
-
-#                         name=random.choice(
-#                             review_names
-#                         ),
-
-#                         rating=random.randint(
-#                             3,
-#                             5
-#                         ),
-
-#                         comment=random.choice(
-#                             review_comments
-#                         ),
-#                     )
-#                 )
-
-#         Review.objects.bulk_create(
-#             reviews
-#         )
-
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 f"Reviews created: {len(reviews)}"
-#             )
-#         )
-
-#         # ============================================================
-#         # FINAL SUMMARY
-#         # ============================================================
-
-#         self.stdout.write("")
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 "=========================================="
-#             )
-#         )
-
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 "TEST DATA CREATED SUCCESSFULLY"
-#             )
-#         )
-
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 "=========================================="
-#             )
-#         )
-
-#         self.stdout.write(
-#             f"Categories : {Category.objects.count()}"
-#         )
-
-#         self.stdout.write(
-#             f"Products   : {Product.objects.count()}"
-#         )
-
-#         self.stdout.write(
-#             f"Images     : {ProductImage.objects.count()}"
-#         )
-
-#         self.stdout.write(
-#             f"Reviews    : {Review.objects.count()}"
-#         )
-
-#         self.stdout.write("")
-#         self.stdout.write(
-#             self.style.WARNING(
-#                 "Embeddings were left NULL intentionally."
-#             )
-#         )
-
-#     # ================================================================
-#     # IMAGE GENERATOR
-#     # ================================================================
-
-#     def create_image(
-#     self,
-#     text,
-#     variant=False
-# ):
-
-#         if Image is None:
-#             raise ImportError(
-#             "Pillow is required. Run: pip install Pillow"
-#         )
-
-#         width = 800
-#         height = 800
-
-#         backgrounds = [
-#         (235, 245, 255),
-#         (245, 240, 255),
-#         (240, 255, 245),
-#         (255, 248, 235),
-#         (255, 240, 245),
-#         (240, 250, 255),
-#     ]
-
-#         background = random.choice(backgrounds)
-
-#         image = Image.new(
-#         "RGB",
-#         (width, height),
-#         background
-#     )
-
-#         draw = ImageDraw.Draw(image)
-
-#         draw.rounded_rectangle(
-#         (80, 80, 720, 720),
-#         radius=40,
-#         fill=(255, 255, 255)
-#     )
-
-#     draw.rounded_rectangle(
-#         (220, 180, 580, 450),
-#         radius=30,
-#         fill=(230, 238, 255)
-#     )
-
-#     try:
-
-#         font_large = ImageFont.truetype(
-#             "arial.ttf",
-#             42
-#         )
-
-#         font_small = ImageFont.truetype(
-#             "arial.ttf",
-#             28
-#         )
-
-#     except:
-
-#         font_large = ImageFont.load_default()
-#         font_small = ImageFont.load_default()
-
-#     display_name = text[:28]
-
-#     draw.text(
-#         (400, 500),
-#         display_name,
-#         fill=(15, 23, 42),
-#         font=font_large,
-#         anchor="mm"
-#     )
-
-#     draw.text(
-#         (400, 580),
-#         "QuickAI",
-#         fill=(37, 99, 235),
-#         font=font_small,
-#         anchor="mm"
-#     )
-
-#     draw.text(
-#         (400, 630),
-#         "Premium Product",
-#         fill=(100, 116, 139),
-#         font=font_small,
-#         anchor="mm"
-#     )
-
-#     buffer = BytesIO()
-
-#     image.save(
-#         buffer,
-#         format="JPEG",
-#         quality=90
-#     )
-
-#     buffer.seek(0)
-
-#     # IMPORTANT:
-#     # ContentFile ko filename dena zaroori hai
-
-#     filename = (
-#         text.lower()
-#         .replace(" ", "-")
-#         .replace("/", "-")[:40]
-#     )
-
-#     if variant:
-#         filename += "-variant"
-
-#     filename += ".jpg"
-
-#     return ContentFile(
-#         buffer.read(),
-#         name=filename
-#     )
-
-#         if Image is None:
-
-#             raise ImportError(
-#                 "Pillow is required. Run: pip install Pillow"
-#             )
-
-#         width = 800
-#         height = 800
-
-#         # Different backgrounds
-#         backgrounds = [
-
-#             (235, 245, 255),
-
-#             (245, 240, 255),
-
-#             (240, 255, 245),
-
-#             (255, 248, 235),
-
-#             (255, 240, 245),
-
-#             (240, 250, 255),
-
-#         ]
-
-#         background = random.choice(
-#             backgrounds
-#         )
-
-#         image = Image.new(
-#             "RGB",
-#             (width, height),
-#             background
-#         )
-
-#         draw = ImageDraw.Draw(
-#             image
-#         )
-
-#         # Product card
-#         draw.rounded_rectangle(
-#             (80, 80, 720, 720),
-#             radius=40,
-#             fill=(255, 255, 255)
-#         )
-
-#         # Product icon / simple visual
-#         draw.rounded_rectangle(
-#             (220, 180, 580, 450),
-#             radius=30,
-#             fill=(230, 238, 255)
-#         )
-
-#         # Try default font
-#         try:
-
-#             font_large = ImageFont.truetype(
-#                 "arial.ttf",
-#                 42
-#             )
-
-#             font_small = ImageFont.truetype(
-#                 "arial.ttf",
-#                 28
-#             )
-
-#         except:
-
-#             font_large = ImageFont.load_default()
-
-#             font_small = ImageFont.load_default()
-
-#         # Product name
-#         display_name = text[:28]
-
-#         draw.text(
-#             (400, 500),
-#             display_name,
-#             fill=(15, 23, 42),
-#             font=font_large,
-#             anchor="mm"
-#         )
-
-#         draw.text(
-#             (400, 580),
-#             "QuickAI",
-#             fill=(37, 99, 235),
-#             font=font_small,
-#             anchor="mm"
-#         )
-
-#         draw.text(
-#             (400, 630),
-#             "Premium Product",
-#             fill=(100, 116, 139),
-#             font=font_small,
-#             anchor="mm"
-#         )
-
-#         buffer = BytesIO()
-
-#         image.save(
-#             buffer,
-#             format="JPEG",
-#             quality=90
-#         )
-
-#         buffer.seek(0)
-
-#         return ContentFile(
-#             buffer.read()
-#         )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import requests
+from io import BytesIO
+from decimal import Decimal
 
 from django.core.management.base import BaseCommand
 from django.core.files.base import ContentFile
+from django.utils.text import slugify
 
-from products.models import (
-    Category,
-    Product,
-    ProductImage,
-    Review,
-)
+from products.models import Category, Product, ProductImage, Review
 
-from decimal import Decimal
-from io import BytesIO
 
-import random
-
-try:
-    from PIL import Image, ImageDraw, ImageFont
-except ImportError:
-    Image = None
+DUMMY_JSON_URL = "https://dummyjson.com/products?limit=100"
 
 
 class Command(BaseCommand):
-
-    help = "Create realistic testing data for Quick Ecommerce"
-
-    def add_arguments(self, parser):
-
-        parser.add_argument(
-            "--count",
-            type=int,
-            default=200,
-            help="Number of products to create",
-        )
-
-        parser.add_argument(
-            "--clear",
-            action="store_true",
-            help="Delete existing categories and products first",
-        )
+    help = "Seed 100 realistic products with real product images"
 
     def handle(self, *args, **options):
 
-        count = options["count"]
-        clear = options["clear"]
-
         self.stdout.write(
             self.style.WARNING(
-                f"Creating {count} test products..."
+                "Fetching products from DummyJSON..."
             )
         )
 
-        # ============================================================
-        # CLEAR OLD DATA
-        # ============================================================
+        try:
+            response = requests.get(
+                DUMMY_JSON_URL,
+                timeout=30
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        if clear:
-
+        except Exception as e:
             self.stdout.write(
-                self.style.WARNING(
-                    "Deleting old product testing data..."
+                self.style.ERROR(
+                    f"Could not fetch products: {e}"
                 )
             )
+            return
 
-            Review.objects.all().delete()
-            ProductImage.objects.all().delete()
-            Product.objects.all().delete()
-            Category.objects.all().delete()
+        products_data = data.get("products", [])
 
-        # ============================================================
-        # CATEGORIES
-        # ============================================================
-
-        categories_data = [
-
-            {
-                "name": "Books & Stationery",
-                "description": "Books, notebooks, stationery and office essentials.",
-            },
-
-            {
-                "name": "Electronics",
-                "description": "Modern electronics, gadgets and accessories.",
-            },
-
-            {
-                "name": "Groceries",
-                "description": "Fresh groceries and everyday food essentials.",
-            },
-
-            {
-                "name": "Beauty",
-                "description": "Beauty, skincare and personal care products.",
-            },
-
-            {
-                "name": "Home & Kitchen",
-                "description": "Useful products for your home and kitchen.",
-            },
-
-            {
-                "name": "Fashion",
-                "description": "Fashion products, clothing and accessories.",
-            },
-
-            {
-                "name": "Sports",
-                "description": "Sports and fitness equipment.",
-            },
-
-            {
-                "name": "Health",
-                "description": "Everyday health and wellness products.",
-            },
-
-        ]
-
-        categories = []
-
-        for category_data in categories_data:
-
-            category, created = Category.objects.get_or_create(
-                name=category_data["name"],
-                defaults={
-                    "description": category_data["description"]
-                }
+        if not products_data:
+            self.stdout.write(
+                self.style.ERROR("No products received.")
             )
-
-            categories.append(category)
+            return
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Categories ready: {len(categories)}"
+                f"Fetched {len(products_data)} products."
             )
         )
 
-        # ============================================================
-        # PRODUCT DATA
-        # ============================================================
+        # --------------------------------------------------
+        # DELETE OLD SEEDED DATA
+        # --------------------------------------------------
 
-        product_templates = [
+        self.stdout.write(
+            self.style.WARNING(
+                "Deleting old products..."
+            )
+        )
 
-            # BOOKS
-            {
-                "category": "Books & Stationery",
-                "names": [
-                    "Professional Book Set",
-                    "Professional Notebook Set",
-                    "Professional Office Notebook",
-                    "Professional Writing Notebook",
-                    "Professional Journal Set",
-                    "Business Management Book",
-                    "Python Programming Book",
-                    "Django REST Framework Book",
-                    "Artificial Intelligence Book",
-                    "Machine Learning Handbook",
-                    "Data Structures Book",
-                    "Algorithms Complete Guide",
-                    "Software Engineering Book",
-                    "Computer Science Handbook",
-                    "Student Notebook Pack",
-                    "Premium Diary",
-                    "Office Stationery Set",
-                    "A4 Writing Notebook",
-                    "Premium Planner",
-                    "Study Notes Notebook",
-                ],
-            },
+        Review.objects.all().delete()
+        ProductImage.objects.all().delete()
+        Product.objects.all().delete()
+        Category.objects.all().delete()
 
-            # ELECTRONICS
-            {
-                "category": "Electronics",
-                "names": [
-                    "Wireless Bluetooth Headphones",
-                    "Professional Noise Cancelling Headphones",
-                    "Wireless Mouse",
-                    "Mechanical Keyboard",
-                    "USB Type C Cable",
-                    "Fast Charging Adapter",
-                    "Power Bank 20000mAh",
-                    "Smart Watch",
-                    "Bluetooth Speaker",
-                    "Portable Bluetooth Speaker",
-                    "LED Desk Lamp",
-                    "USB Hub",
-                    "Laptop Stand",
-                    "Webcam HD",
-                    "Wireless Earbuds",
-                    "Gaming Headset",
-                    "Phone Holder",
-                    "Smart LED Bulb",
-                    "Portable SSD",
-                    "Laptop Cooling Pad",
-                ],
-            },
+        # --------------------------------------------------
+        # CATEGORY CACHE
+        # --------------------------------------------------
 
-            # GROCERIES
-            {
-                "category": "Groceries",
-                "names": [
-                    "Premium Milk",
-                    "Fresh Organic Apples",
-                    "Fresh Bananas",
-                    "Whole Wheat Bread",
-                    "Premium Coffee",
-                    "Green Tea",
-                    "Organic Honey",
-                    "Basmati Rice",
-                    "Cooking Oil",
-                    "Organic Oats",
-                    "Corn Flakes",
-                    "Chocolate Cookies",
-                    "Fresh Orange Juice",
-                    "Mineral Water",
-                    "Premium Pasta",
-                    "Tomato Ketchup",
-                    "Peanut Butter",
-                    "Mixed Nuts",
-                    "Organic Dates",
-                    "Breakfast Cereal",
-                ],
-            },
+        categories = {}
 
-            # BEAUTY
-            {
-                "category": "Beauty",
-                "names": [
-                    "Face Wash",
-                    "Vitamin C Face Serum",
-                    "Moisturizing Cream",
-                    "Daily Sunscreen",
-                    "Hair Shampoo",
-                    "Conditioner",
-                    "Hair Oil",
-                    "Body Lotion",
-                    "Lip Balm",
-                    "Face Moisturizer",
-                    "Cleansing Foam",
-                    "Skin Care Kit",
-                    "Beauty Brush Set",
-                    "Makeup Organizer",
-                    "Hand Cream",
-                    "Body Wash",
-                    "Hair Mask",
-                    "Anti Dandruff Shampoo",
-                    "Aloe Vera Gel",
-                    "Premium Beauty Kit",
-                ],
-            },
-
-            # HOME
-            {
-                "category": "Home & Kitchen",
-                "names": [
-                    "Coffee Mug",
-                    "Stainless Steel Water Bottle",
-                    "Kitchen Knife Set",
-                    "Non Stick Frying Pan",
-                    "Dinner Plate Set",
-                    "Glass Storage Container",
-                    "Electric Kettle",
-                    "Kitchen Organizer",
-                    "Storage Box",
-                    "Bedsheet Set",
-                    "Pillow Cover Set",
-                    "Table Lamp",
-                    "Wall Clock",
-                    "Laundry Basket",
-                    "Vacuum Cleaner",
-                    "Kitchen Scale",
-                    "Cutlery Set",
-                    "Food Storage Box",
-                    "Air Freshener",
-                    "Premium Kitchen Set",
-                ],
-            },
-
-            # FASHION
-            {
-                "category": "Fashion",
-                "names": [
-                    "Classic T Shirt",
-                    "Premium Cotton Shirt",
-                    "Casual Jeans",
-                    "Sports Jacket",
-                    "Men Wallet",
-                    "Leather Belt",
-                    "Running Shoes",
-                    "Casual Sneakers",
-                    "Fashion Backpack",
-                    "Travel Backpack",
-                    "Baseball Cap",
-                    "Winter Hoodie",
-                    "Premium Socks Pack",
-                    "Classic Sunglasses",
-                    "Leather Handbag",
-                    "Casual Watch",
-                    "Formal Shoes",
-                    "Denim Jacket",
-                    "Cotton Polo Shirt",
-                    "Premium Fashion Set",
-                ],
-            },
-
-            # SPORTS
-            {
-                "category": "Sports",
-                "names": [
-                    "Football",
-                    "Cricket Bat",
-                    "Cricket Ball",
-                    "Tennis Racket",
-                    "Badminton Racket",
-                    "Yoga Mat",
-                    "Gym Gloves",
-                    "Resistance Bands",
-                    "Skipping Rope",
-                    "Water Bottle Sports",
-                    "Running Shoes Sports",
-                    "Fitness Tracker",
-                    "Dumbbell Set",
-                    "Exercise Mat",
-                    "Sports Backpack",
-                    "Cycling Gloves",
-                    "Football Shoes",
-                    "Training Cone Set",
-                    "Sports Towel",
-                    "Fitness Kit",
-                ],
-            },
-
-            # HEALTH
-            {
-                "category": "Health",
-                "names": [
-                    "Digital Thermometer",
-                    "First Aid Kit",
-                    "Vitamin Organizer",
-                    "Pill Storage Box",
-                    "Heating Pad",
-                    "Reusable Ice Pack",
-                    "Digital Weighing Scale",
-                    "Blood Pressure Monitor",
-                    "Sleep Mask",
-                    "Travel Health Kit",
-                    "Personal Care Kit",
-                    "Hand Sanitizer",
-                    "Face Mask Pack",
-                    "Health Monitoring Watch",
-                    "Wellness Kit",
-                    "Eye Mask",
-                    "Medicine Organizer",
-                    "Portable Humidifier",
-                    "Massage Ball",
-                    "Health Essentials Kit",
-                ],
-            },
-
-        ]
-
-        brands = [
-            "QuickAI",
-            "ProMax",
-            "Nova",
-            "SmartTech",
-            "PremiumChoice",
-            "DailyLife",
-            "Ultra",
-            "EcoLife",
-            "NextGen",
-            "HomePro",
-            "TechZone",
-            "Prime",
-        ]
-
-        units = [
-            "piece",
-            "pack",
-            "box",
-            "kg",
-            "liter",
-            "set",
-        ]
-
-        category_map = {
-            category.name: category
-            for category in categories
-        }
-
-        # ============================================================
+        # --------------------------------------------------
         # CREATE PRODUCTS
-        # ============================================================
+        # --------------------------------------------------
 
-        created_products = []
+        created_products = 0
+        created_images = 0
+        created_reviews = 0
 
-        for i in range(count):
+        for index, item in enumerate(products_data, start=1):
 
-            template = random.choice(product_templates)
-
-            product_name = random.choice(
-                template["names"]
+            title = item.get(
+                "title",
+                f"Product {index}"
             )
 
-            # Ensure unique product names
-            product_name = f"{product_name} {i + 1}"
-
-            category = category_map[
-                template["category"]
-            ]
-
-            price = Decimal(
-                random.randint(150, 15000)
+            description = item.get(
+                "description",
+                "High quality product."
             )
 
-            # About 65% products have discount
-            if random.random() < 0.65:
+            brand = item.get(
+                "brand",
+                "Premium Brand"
+            )
 
-                discount_percent = random.randint(
-                    5,
-                    40
-                )
+            category_name = item.get(
+                "category",
+                "general"
+            )
 
-                discount_price = (
-                    price
-                    - (
-                        price
-                        * Decimal(discount_percent)
-                        / Decimal("100")
+            category_display = category_name.replace(
+                "-", " "
+            ).title()
+
+            # --------------------------------------------------
+            # CATEGORY
+            # --------------------------------------------------
+
+            if category_name not in categories:
+
+                category = Category.objects.create(
+                    name=category_display,
+                    description=(
+                        f"Explore our {category_display} "
+                        f"collection."
                     )
-                ).quantize(
-                    Decimal("0.01")
                 )
+
+                # Category image
+                category_image_url = item.get(
+                    "thumbnail"
+                )
+
+                if category_image_url:
+
+                    try:
+
+                        image_response = requests.get(
+                            category_image_url,
+                            timeout=20
+                        )
+
+                        if image_response.status_code == 200:
+
+                            filename = (
+                                f"{slugify(category_name)}.jpg"
+                            )
+
+                            category.image.save(
+                                filename,
+                                ContentFile(
+                                    image_response.content
+                                ),
+                                save=True
+                            )
+
+                    except Exception as e:
+
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Category image failed: "
+                                f"{category_name} - {e}"
+                            )
+                        )
+
+                categories[category_name] = category
 
             else:
 
-                discount_price = None
+                category = categories[category_name]
 
-            product = Product(
+            # --------------------------------------------------
+            # PRICE
+            # --------------------------------------------------
+
+            price = Decimal(
+                str(item.get("price", 10))
+            )
+
+            discount_percentage = Decimal(
+                str(
+                    item.get(
+                        "discountPercentage",
+                        0
+                    )
+                )
+            )
+
+            discount_price = price * (
+                Decimal("1")
+                - discount_percentage / Decimal("100")
+            )
+
+            discount_price = round(
+                discount_price,
+                2
+            )
+
+            # --------------------------------------------------
+            # STOCK
+            # --------------------------------------------------
+
+            stock = item.get(
+                "stock",
+                20
+            )
+
+            # --------------------------------------------------
+            # PRODUCT
+            # --------------------------------------------------
+
+            product = Product.objects.create(
 
                 category=category,
 
-                name=product_name,
+                name=title,
 
-                description=(
-                    f"{product_name} is a high quality "
-                    f"product available at QuickAI. "
-                    f"Perfect for everyday use with "
-                    f"excellent value and reliable quality."
-                ),
+                description=description,
 
-                brand=random.choice(brands),
+                brand=brand,
 
                 price=price,
 
                 discount_price=discount_price,
 
                 weight=Decimal(
-                    random.randint(50, 5000)
+                    str(
+                        item.get(
+                            "weight",
+                            1
+                        )
+                    )
                 ),
 
-                unit=random.choice(units),
+                unit="piece",
 
-                stock_status=random.random() > 0.15,
+                stock_status=stock > 0,
 
-                is_active=random.random() > 0.05,
-
-                # IMPORTANT:
-                # Do not generate fake semantic embeddings.
-                embedding=None,
+                is_active=True,
             )
 
-            product.save()
+            created_products += 1
 
-            # ========================================================
-            # PRODUCT IMAGE
-            # ========================================================
+            # --------------------------------------------------
+            # MAIN IMAGE
+            # --------------------------------------------------
 
-            image_file = self.create_image(
-                product.name
+            thumbnail_url = item.get(
+                "thumbnail"
             )
 
-            product.image.save(
-                f"product-{product.id}.jpg",
-                image_file,
-                save=True
+            if thumbnail_url:
+
+                try:
+
+                    image_response = requests.get(
+                        thumbnail_url,
+                        timeout=20
+                    )
+
+                    if image_response.status_code == 200:
+
+                        extension = self.get_extension(
+                            thumbnail_url
+                        )
+
+                        filename = (
+                            f"{slugify(title)}"
+                            f"{extension}"
+                        )
+
+                        product.image.save(
+                            filename,
+                            ContentFile(
+                                image_response.content
+                            ),
+                            save=True
+                        )
+
+                except Exception as e:
+
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Main image failed: "
+                            f"{title} - {e}"
+                        )
+                    )
+
+            # --------------------------------------------------
+            # ADDITIONAL IMAGES
+            # --------------------------------------------------
+
+            images = item.get(
+                "images",
+                []
             )
 
-            # ========================================================
-            # EXTRA PRODUCT IMAGE
-            # ========================================================
+            for image_index, image_url in enumerate(
+                images[:3],
+                start=1
+            ):
 
-            second_image_file = self.create_image(
-                product.name,
-                variant=True
-            )
+                try:
 
-            ProductImage.objects.create(
+                    image_response = requests.get(
+                        image_url,
+                        timeout=20
+                    )
 
-                product=product,
+                    if image_response.status_code != 200:
+                        continue
 
-                image=second_image_file,
+                    extension = self.get_extension(
+                        image_url
+                    )
 
-                is_primary=False,
-            )
+                    filename = (
+                        f"{slugify(title)}"
+                        f"-{image_index}"
+                        f"{extension}"
+                    )
 
-            # ========================================================
-            # PRIMARY PRODUCT IMAGE
-            # ========================================================
+                    product_image = (
+                        ProductImage.objects.create(
+                            product=product
+                        )
+                    )
 
-            primary_image_file = self.create_image(
-                product.name,
-                variant=True
-            )
-
-            ProductImage.objects.create(
-
-                product=product,
-
-                image=primary_image_file,
-
-                is_primary=True,
-            )
-
-            created_products.append(product)
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Products created: {len(created_products)}"
-            )
-        )
-
-        # ============================================================
-        # CREATE REVIEWS
-        # ============================================================
-
-        review_names = [
-            "Ali",
-            "Ahmed",
-            "Usman",
-            "Hamza",
-            "Hassan",
-            "Bilal",
-            "Sarah",
-            "Ayesha",
-            "Fatima",
-            "John",
-            "Michael",
-            "Emma",
-        ]
-
-        review_comments = [
-            "Excellent product. Really happy with the quality.",
-            "Good quality and fast delivery.",
-            "Product is exactly as described.",
-            "Very useful product. Recommended.",
-            "Good value for money.",
-            "Quality is better than expected.",
-            "I really like this product.",
-            "Fast delivery and good packaging.",
-            "Amazing product for the price.",
-            "Would definitely buy again.",
-        ]
-
-        reviews = []
-
-        for product in created_products:
-
-            # 0-5 reviews per product
-            review_count = random.randint(
-                0,
-                5
-            )
-
-            for _ in range(review_count):
-
-                reviews.append(
-                    Review(
-                        product=product,
-
-                        name=random.choice(
-                            review_names
+                    product_image.image.save(
+                        filename,
+                        ContentFile(
+                            image_response.content
                         ),
+                        save=True
+                    )
 
-                        rating=random.randint(
-                            3,
-                            5
-                        ),
+                    created_images += 1
 
-                        comment=random.choice(
-                            review_comments
-                        ),
+                except Exception as e:
+
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Additional image failed: "
+                            f"{title} - {e}"
+                        )
+                    )
+
+            # --------------------------------------------------
+            # REVIEWS
+            # --------------------------------------------------
+
+            rating = item.get(
+                "rating",
+                4.5
+            )
+
+            review_names = [
+                "John Smith",
+                "Michael Brown",
+                "David Wilson",
+                "James Miller",
+                "Robert Davis",
+            ]
+
+            for review_index in range(2):
+
+                review_name = review_names[
+                    (index + review_index)
+                    % len(review_names)
+                ]
+
+                Review.objects.create(
+
+                    product=product,
+
+                    name=review_name,
+
+                    rating=max(
+                        1,
+                        min(
+                            5,
+                            round(float(rating))
+                        )
+                    ),
+
+                    comment=(
+                        "Great product. "
+                        "The quality is really good "
+                        "and I am satisfied with my purchase."
                     )
                 )
 
-        Review.objects.bulk_create(
-            reviews
-        )
+                created_reviews += 1
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Reviews created: {len(reviews)}"
+            # --------------------------------------------------
+            # PROGRESS
+            # --------------------------------------------------
+
+            self.stdout.write(
+                f"[{index}/{len(products_data)}] "
+                f"{title}"
             )
-        )
 
-        # ============================================================
-        # FINAL SUMMARY
-        # ============================================================
+        # --------------------------------------------------
+        # FINAL RESULT
+        # --------------------------------------------------
 
         self.stdout.write("")
         self.stdout.write(
             self.style.SUCCESS(
-                "=========================================="
+                "========================================"
             )
         )
 
         self.stdout.write(
             self.style.SUCCESS(
-                "TEST DATA CREATED SUCCESSFULLY"
+                "PRODUCT SEEDING COMPLETED"
             )
         )
 
         self.stdout.write(
             self.style.SUCCESS(
-                "=========================================="
+                "========================================"
             )
         )
 
         self.stdout.write(
-            f"Categories : {Category.objects.count()}"
-        )
-
-        self.stdout.write(
-            f"Products   : {Product.objects.count()}"
-        )
-
-        self.stdout.write(
-            f"Images     : {ProductImage.objects.count()}"
-        )
-
-        self.stdout.write(
-            f"Reviews    : {Review.objects.count()}"
-        )
-
-        self.stdout.write("")
-        self.stdout.write(
-            self.style.WARNING(
-                "Embeddings were left NULL intentionally."
+            self.style.SUCCESS(
+                f"Categories : {len(categories)}"
             )
         )
 
-
-    # ================================================================
-    # IMAGE GENERATOR
-    # ================================================================
-
-    def create_image(self, text, variant=False):
-        """
-        Generate a local testing image and return it as a named ContentFile.
-
-        IMPORTANT:
-        ImageField/FileField requires ContentFile to have a filename.
-        """
-
-        if Image is None:
-            raise ImportError(
-                "Pillow is required. Run: pip install Pillow"
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Products   : {created_products}"
             )
-
-        width = 800
-        height = 800
-
-        backgrounds = [
-            (235, 245, 255),
-            (245, 240, 255),
-            (240, 255, 245),
-            (255, 248, 235),
-            (255, 240, 245),
-            (240, 250, 255),
-        ]
-
-        background = random.choice(backgrounds)
-
-        image = Image.new(
-            "RGB",
-            (width, height),
-            background
         )
 
-        draw = ImageDraw.Draw(image)
-
-        # Product card
-        draw.rounded_rectangle(
-            (80, 80, 720, 720),
-            radius=40,
-            fill=(255, 255, 255)
-        )
-
-        # Simple product visual
-        draw.rounded_rectangle(
-            (220, 180, 580, 450),
-            radius=30,
-            fill=(230, 238, 255)
-        )
-
-        # Use Arial when available; otherwise Pillow's default font.
-        try:
-            font_large = ImageFont.truetype(
-                "arial.ttf",
-                42
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Images     : {created_images}"
             )
-            font_small = ImageFont.truetype(
-                "arial.ttf",
-                28
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Reviews    : {created_reviews}"
             )
-        except Exception:
-            font_large = ImageFont.load_default()
-            font_small = ImageFont.load_default()
-
-        display_name = text[:28]
-
-        draw.text(
-            (400, 500),
-            display_name,
-            fill=(15, 23, 42),
-            font=font_large,
-            anchor="mm"
         )
 
-        draw.text(
-            (400, 580),
-            "QuickAI",
-            fill=(37, 99, 235),
-            font=font_small,
-            anchor="mm"
-        )
+    # ------------------------------------------------------
+    # IMAGE EXTENSION
+    # ------------------------------------------------------
 
-        draw.text(
-            (400, 630),
-            "Premium Product",
-            fill=(100, 116, 139),
-            font=font_small,
-            anchor="mm"
-        )
+    def get_extension(self, url):
 
-        buffer = BytesIO()
+        url = url.lower()
 
-        image.save(
-            buffer,
-            format="JPEG",
-            quality=90
-        )
+        if ".png" in url:
+            return ".png"
 
-        buffer.seek(0)
+        if ".webp" in url:
+            return ".webp"
 
-        # IMPORTANT:
-        # Give ContentFile a filename so Django's ImageField can save it.
-        safe_name = (
-            text.lower()
-            .replace(" ", "-")
-            .replace("/", "-")
-            .replace("\\", "-")
-        )
+        if ".jpeg" in url:
+            return ".jpeg"
 
-        safe_name = "".join(
-            char for char in safe_name
-            if char.isalnum() or char in "-_"
-        )
-
-        safe_name = safe_name[:40] or "product"
-
-        if variant:
-            safe_name += "-variant"
-
-        filename = f"{safe_name}.jpg"
-
-        return ContentFile(
-            buffer.read(),
-            name=filename
-        )
+        return ".jpg"

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "corsheaders",
+    "storages",
 
     "accounts",
     "products",
@@ -223,6 +224,36 @@ STATIC_URL = "static/"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": os.getenv("SUPABASE_S3_ACCESS_KEY"),
+            "secret_key": os.getenv("SUPABASE_S3_SECRET_KEY"),
+            "bucket_name": os.getenv(
+                "SUPABASE_STORAGE_BUCKET",
+                "product-images"
+            ),
+            "endpoint_url": os.getenv(
+                "SUPABASE_S3_ENDPOINT"
+            ),
+            "region_name": os.getenv(
+                "SUPABASE_S3_REGION"
+            ),
+            "addressing_style": "path",
+            "querystring_auth": False,
+            "signature_version": "s3v4",
+        },
+    },
+
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 
 
 # ============================================================
