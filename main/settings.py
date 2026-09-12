@@ -225,24 +225,32 @@ STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+SUPABASE_PUBLIC_STORAGE_URL = (
+    "https://usoryvwqjytwfdubumel.supabase.co"
+    "/storage/v1/object/public/product-images"
+)
 
 
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
+        "BACKEND": "main.storage.SupabaseStorage",
         "OPTIONS": {
             "access_key": os.getenv("SUPABASE_S3_ACCESS_KEY"),
             "secret_key": os.getenv("SUPABASE_S3_SECRET_KEY"),
+
             "bucket_name": os.getenv(
                 "SUPABASE_STORAGE_BUCKET",
                 "product-images"
             ),
+
             "endpoint_url": os.getenv(
                 "SUPABASE_S3_ENDPOINT"
             ),
+
             "region_name": os.getenv(
                 "SUPABASE_S3_REGION"
             ),
+
             "addressing_style": "path",
             "querystring_auth": False,
             "signature_version": "s3v4",
