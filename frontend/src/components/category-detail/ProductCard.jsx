@@ -2,11 +2,9 @@ import { Heart, ShoppingCart, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
-  const image =
-    product.image
-      // ? `http://127.0.0.1:8000${product.image}`
-      ? `${import.meta.env.VITE_API_BASE_URL}${product.image}`
-      : "https://placehold.co/600x400?text=No+Image";
+  const image = product.image
+  ? product.image
+  : "https://placehold.co/600x400?text=No+Image";
 
   return (
     <div className="group bg-white rounded-3xl overflow-hidden border shadow-sm hover:shadow-xl transition duration-300">
