@@ -1,12 +1,7 @@
 import API from "./api";
 import axios from "axios";
 
-// Register
-// export const registerUser = (data) =>
-//   axios.post(
-//     "http://127.0.0.1:8000/api/accounts/register/",
-//     data
-//   );
+
 
 export const registerUser = (data) =>
   API.post(
@@ -14,12 +9,7 @@ export const registerUser = (data) =>
     data
   );
 
-// Login
-// export const loginUser = (data) =>
-//   axios.post(
-//     "http://127.0.0.1:8000/api/accounts/login/",
-//     data
-//   );
+
 
 export const loginUser = (data) =>
   API.post(
