@@ -91,3 +91,20 @@ export const cancelAdminOrder = (orderId) =>
   API.patch(
     `orders/order/${orderId}/admin-cancel/`
   );
+
+
+
+// ============================================================
+// ADMIN - USER MANAGEMENT
+// ============================================================
+
+export const getAdminUsers = () =>
+  API.get("accounts/admin/users/");
+
+export const makeUserRider = (userId, vehicleType) =>
+  API.post(
+    `accounts/admin/users/${userId}/make-rider/`,
+    {
+      vehicle_type: vehicleType,
+    }
+  );

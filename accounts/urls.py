@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register(r'profiles', views.ProfileViewSet, basename='profile')
 router.register(r'addresses', views.AddressViewSet, basename='address')
 router.register(r'riders',views.RiderProfileViewSet,basename='rider')
+router.register( r'admin/users', views.AdminUserViewSet, basename='admin-user')
 
 
 urlpatterns = [

@@ -831,3 +831,86 @@ class RiderProfileViewSet(viewsets.ModelViewSet):
 
 
 
+# ==========================================
+# ADMIN → USER MANAGEMENT
+# ==========================================
+
+class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
+
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAdminRole]
+
+    def get_queryset(self):
+        return CustomUserModel.objects.all().order_by("-created_at")
+
+    # ==========================================
+    # ADMIN → MAKE USER RIDER
+    # ==========================================
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="make-rider"
+    )
+    def make_rider(self, request, pk=None):
+
+        user = self.get_object()
+
+        # Already rider
+        if user.role == "RIDER":
+            return Response(
+                {
+                    "error": "User is already a rider."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Admin cannot become rider
+        if user.role == "ADMIN":
+            return Response(
+                {
+                    "error": "Admin cannot be converted to rider."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        vehicle_type = request.data.get("vehicle_type")
+
+        if vehicle_type not in ["BIKE", "CYCLE", "CAR"]:
+            return Response(
+                {
+                    "error": "vehicle_type must be BIKE, CYCLE or CAR."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Change role
+        user.role = "RIDER"
+        user.save(update_fields=["role"])
+
+        # Create rider profile
+        rider_profile, created = RiderProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "vehicle_type": vehicle_type,
+                "availability_status": True,
+            }
+        )
+
+        return Response(
+            {
+                "message": "User successfully converted to rider.",
+                "user": {
+                    "id": str(user.id),
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role,
+                },
+                "rider_profile": {
+                    "id": rider_profile.id,
+                    "vehicle_type": rider_profile.vehicle_type,
+                    "availability_status": rider_profile.availability_status,
+                }
+            },
+            status=status.HTTP_200_OK
+        )
