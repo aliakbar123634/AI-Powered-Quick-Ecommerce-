@@ -1223,7 +1223,7 @@ from notifications.utils import send_email_notification
 
 from delivery.models import DeliveryTracking
 from accounts.serializers import RiderOrderSerializer
-
+from . serializers import *
 
 # ============================================================
 # CART
