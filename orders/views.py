@@ -923,13 +923,13 @@ class PaymentViewSet(viewsets.ModelViewSet):
         # success_url=
         # "http://localhost:5173/payment-success",
         success_url=(
-        f"http://localhost:5173/payment-success"
-        f"?payment_id={payment.id}"
+            f"{settings.FRONTEND_URL}/payment-success"
+            f"?payment_id={payment.id}"
         ),
+        cancel_url=f"{settings.FRONTEND_URL}/payment-failed", 
 
-
-        cancel_url=
-        "http://localhost:5173/payment-failed",
+    #     cancel_url=
+    #     "http://localhost:5173/payment-failed",
 
     )
         payment.stripe_session_id = session.id

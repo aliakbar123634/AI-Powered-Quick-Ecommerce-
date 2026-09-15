@@ -287,7 +287,12 @@ RESEND_FROM_EMAIL = os.getenv(
 # FRONTEND
 # ============================================================
 
-FRONTEND_URL = "http://localhost:5173"
+# FRONTEND_URL = "http://localhost:5173"
+
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:5173"
+)
 
 
 # ============================================================
