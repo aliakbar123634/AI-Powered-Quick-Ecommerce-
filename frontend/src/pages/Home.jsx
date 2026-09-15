@@ -30,8 +30,8 @@ const Home = () => {
     <>
     <Navbar />
     <HeroSection/>
-    <StatsBar/>
-    <TrustBadges/>
+ {/* //   <StatsBar/>  */}
+    {/* <TrustBadges/> */}
     <CategoryCard/>
     <FeaturedProducts/>
     <AIRecommendation/>

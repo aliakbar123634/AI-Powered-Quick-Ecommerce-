@@ -15,7 +15,7 @@ const AIChat = () => {
         {
             role: "assistant",
             content:
-                "Hi! I'm Einstein Ali, your AI Shopping Assistant. I can help you find products, check prices, recommend products, check stock, and manage your shopping.",
+                "Hi! I'm Einstein Ali, your AI Shopping Assistant. Please log in or create an account to use my full shopping assistance features, including product recommendations, stock checks, and shopping management."
         },
     ]);
 

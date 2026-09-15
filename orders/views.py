@@ -417,14 +417,14 @@ class OrderViewSet(viewsets.ModelViewSet):
             order.total_price = total_price
             order.save()
             cart.items.all().delete()
-            Notification.objects.create(
-                user=user,
-                title="Order Placed Successfully",
-                message=(
-                    f"Your order {order.order_number} "
-                    "has been placed successfully."
-                )
-            )    
+            # Notification.objects.create(
+            #     user=user,
+            #     title="Order Placed Successfully",
+            #     message=(
+            #         f"Your order {order.order_number} "
+            #         "has been placed successfully."
+            #     )
+            # )    
             send_email_notification(
                 user.email,
                 "Order Placed Successfully",
