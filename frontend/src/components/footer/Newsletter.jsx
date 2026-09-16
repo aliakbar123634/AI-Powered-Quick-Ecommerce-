@@ -37,7 +37,6 @@ export default function Newsletter() {
 
         } catch (error) {
 
-            console.error("Newsletter Error:", error);
 
             if (error.response?.data?.email) {
 

@@ -23,11 +23,9 @@ const RiderDashboard = () => {
             // await new Promise((resolve) => setTimeout(resolve, 3000)); 
             const response = await getMyOrders();
 
-            console.log(response.data);
 
             setOrders(response.data);
         } catch (error) {
-            console.log(error);
         } finally {
             setLoading(false);
         }

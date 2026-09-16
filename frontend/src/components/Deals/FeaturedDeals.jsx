@@ -18,7 +18,6 @@ export default function FeaturedDeals() {
         try {
             const data = await dealProducts();
 
-            console.log("Deals:", data);
 
             if (Array.isArray(data)) {
                 setProducts(data);
@@ -26,7 +25,6 @@ export default function FeaturedDeals() {
                 setProducts(data.results);
             }
         } catch (error) {
-            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -92,7 +90,6 @@ export default function FeaturedDeals() {
                                         alt={product.name}
                                         className="w-full h-64 object-cover"
                                         onError={(e) => {
-                                            console.log("Image Failed:", image);
 
                                             e.target.src =
                                                 "https://placehold.co/600x600?text=No+Image";

@@ -61,7 +61,6 @@ const Categories = () => {
 
     } catch (error) {
 
-        console.log(error);
         setError("Failed to load categories.");
 
     } finally {

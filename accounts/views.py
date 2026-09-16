@@ -64,7 +64,6 @@ class RegisterView(APIView):
 # class LoginView(APIView):
 #     def post(self, request):
 
-#         print("REQUEST DATA =", request.data)
 
 #         serializer = LoginSerializer(data=request.data)
 
@@ -73,8 +72,6 @@ class RegisterView(APIView):
 #             email = serializer.validated_data.get("email")
 #             password = serializer.validated_data.get("password")
 
-#             print("EMAIL =", email)
-#             print("PASSWORD =", password)
 
 #             user = authenticate(
 #                 request,
@@ -82,7 +79,6 @@ class RegisterView(APIView):
 #                 password=password
 #             )
 
-#             print("USER =", user)
 
 #             if user is not None:
 #                 refresh = RefreshToken.for_user(user)
@@ -97,7 +93,6 @@ class RegisterView(APIView):
 #                 status=401
 #             )
 
-#         print(serializer.errors)
 #         return Response(serializer.errors, status=400)
 
 

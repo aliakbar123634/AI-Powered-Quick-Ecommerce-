@@ -25,7 +25,6 @@ const Home = () => {
       navigate("/login");
   }
           const auth = useAuthStore();
-           console.log(auth);
   return (
     <>
     <Navbar />

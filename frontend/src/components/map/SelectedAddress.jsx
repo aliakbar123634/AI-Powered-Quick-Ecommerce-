@@ -1,5 +1,4 @@
 const SelectedAddress = ({ address }) => {
-    console.log(address);
     return (
 
         <div

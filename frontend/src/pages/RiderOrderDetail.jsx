@@ -17,16 +17,11 @@ const RiderOrderDetail = () => {
 
                 const response = await getRiderOrderDetail(id);
 
-                console.log("RIDER ORDER DETAIL:", response.data);
 
                 setOrder(response.data);
 
             } catch (error) {
 
-                console.error(
-                    "Rider order detail error:",
-                    error
-                );
 
             } finally {
 

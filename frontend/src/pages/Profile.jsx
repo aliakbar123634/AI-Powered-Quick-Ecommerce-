@@ -53,12 +53,9 @@ useEffect(() => {
 
             setOrders(ordersResponse.data.results);
 
-            console.log(profileResponse.data.results[0]);
-            console.log(ordersResponse.data.results);
 
         } catch (error) {
 
-            console.log(error);
 
         } finally {
 

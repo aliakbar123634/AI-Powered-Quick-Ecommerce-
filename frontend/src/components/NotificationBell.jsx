@@ -135,7 +135,6 @@ response.data.results ?? response.data ?? []
 }catch(error){
 
 
-console.error("Could not load notifications:", error);
 
 setNotifications([]);
 
@@ -219,7 +218,6 @@ item
 }catch(error){
 
 
-console.log(error);
 
 
 }
@@ -289,7 +287,6 @@ is_read:true
 }catch(error){
 
 
-console.log(error);
 
 
 }

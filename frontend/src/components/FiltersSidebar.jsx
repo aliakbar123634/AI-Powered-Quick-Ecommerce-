@@ -24,7 +24,6 @@ const FiltersSidebar = ({
         const data = await getCategories();
         setCategories(data.results);
       } catch (error) {
-        console.log(error);
       }
     };
 

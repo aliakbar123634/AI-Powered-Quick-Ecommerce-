@@ -25,7 +25,6 @@ def add_to_cart(
 
     url = f"{settings.BACKEND_BASE_URL}/api/orders/cart/add/"
 
-    print("Django URL:", url)
 
     try:
 
@@ -55,9 +54,6 @@ def add_to_cart(
 
         if e.response is not None:
 
-            print("Status Code:", e.response.status_code)
-            print("Response:", e.response.text)
 
-        print("=" * 60)
 
         return "Failed to add product to cart."

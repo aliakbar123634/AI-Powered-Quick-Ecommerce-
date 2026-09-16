@@ -7,9 +7,6 @@ const ProtectedRoute = () => {
   );
 
   const location = useLocation();
-  console.log("ProtectedRoute");
-  console.log("Auth:", isAuthenticated);
-  console.log("Path:", location.pathname);
 
   return isAuthenticated ? (
     <Outlet />

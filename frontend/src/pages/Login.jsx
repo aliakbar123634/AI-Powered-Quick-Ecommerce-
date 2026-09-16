@@ -133,10 +133,6 @@ const Login = () => {
 
       const response = await loginUser(formData);
 
-      console.log(
-        "LOGIN RESPONSE:",
-        response.data
-      );
 
 
       const {
@@ -164,9 +160,6 @@ const Login = () => {
 
       if (!user) {
 
-        console.error(
-          "Login response does not contain user data."
-        );
 
         throw new Error(
           "User information was not returned by the server."
@@ -174,15 +167,7 @@ const Login = () => {
       }
 
 
-      console.log(
-        "LOGGED IN USER:",
-        user
-      );
 
-      console.log(
-        "USER ROLE:",
-        user.role
-      );
 
 
       // ========================================================
@@ -237,10 +222,6 @@ const Login = () => {
 
     } catch (error) {
 
-      console.error(
-        "LOGIN ERROR:",
-        error
-      );
 
 
       if (error.response?.data) {

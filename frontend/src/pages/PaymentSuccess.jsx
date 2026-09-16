@@ -232,7 +232,6 @@ function PaymentSuccess() {
                 setOrder(res.data.order);
             })
             .catch((err) => {
-                console.error("Payment Success Error:", err);
 
                 setError(
                     err.response?.data?.error ||

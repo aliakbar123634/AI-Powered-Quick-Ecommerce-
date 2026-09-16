@@ -51,7 +51,6 @@ const AIChat = () => {
                 },
             ]);
         } catch (error) {
-            console.error("AI chat error:", error);
 
             setMessages((prev) => [
                 ...prev,

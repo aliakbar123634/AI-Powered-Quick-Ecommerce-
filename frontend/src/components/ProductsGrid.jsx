@@ -45,7 +45,6 @@ const ProductsGrid = ({
 
     const fetchProducts = async () => {
       try {
-        console.log("SEARCH VALUE:", search);
 
         const data = await getProducts(
           page,
@@ -66,7 +65,6 @@ const ProductsGrid = ({
         setPrevious(data.data.previous);
 
       } catch (error) {
-        console.log(error);
       } finally {
         setLoading(false);
       }
@@ -95,7 +93,6 @@ const ProductsGrid = ({
     try {
       const response = await getWishlist();
 
-      console.log("WISHLIST:", response.data);
 
       const data = Array.isArray(response.data)
         ? response.data
@@ -108,10 +105,6 @@ const ProductsGrid = ({
       setWishlistIds(ids);
 
     } catch (error) {
-      console.log(
-        "Wishlist fetch error:",
-        error.response?.data || error
-      );
     }
   };
 
@@ -138,13 +131,11 @@ const ProductsGrid = ({
         quantity: 1,
       });
 
-      console.log(response.data);
 
       alert("Product Added Successfully");
 
     } catch (error) {
 
-      console.log(error.response?.data);
 
       alert("Unable to add product");
 
@@ -183,7 +174,6 @@ const ProductsGrid = ({
 
         });
 
-        console.log("Removed from wishlist");
 
       }
 
@@ -207,16 +197,11 @@ const ProductsGrid = ({
 
         });
 
-        console.log("Added to wishlist");
 
       }
 
     } catch (error) {
 
-      console.log(
-        "Wishlist error:",
-        error.response?.data || error
-      );
 
       if (error.response?.status === 401) {
 

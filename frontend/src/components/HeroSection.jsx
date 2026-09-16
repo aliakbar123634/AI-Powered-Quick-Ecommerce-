@@ -96,10 +96,6 @@ const HeroSection = () => {
 
       } catch (error) {
 
-        console.error(
-          "Hero product search error:",
-          error
-        );
 
         setSearchResults([]);
 

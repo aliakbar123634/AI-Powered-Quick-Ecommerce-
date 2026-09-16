@@ -38,7 +38,6 @@ export default function TopRatedDeals() {
 
         } catch (error) {
 
-            console.error(error);
 
         } finally {
 

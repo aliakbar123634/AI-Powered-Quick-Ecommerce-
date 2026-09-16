@@ -27,6 +27,4 @@ def send_email_notification(
         })
     except Exception as error:
         # Keep the delivery-status API working even if the email provider fails.
-        # The exact Resend error is visible in the Django server console.
-        print(f"EMAIL ERROR for {to_email}: {error}")
         return None

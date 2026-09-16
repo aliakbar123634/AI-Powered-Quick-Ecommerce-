@@ -36,7 +36,6 @@
 //       );
 
 //     } catch (error) {
-//       console.error("Admin riders error:", error);
 
 //       setError(
 //         error.response?.data?.detail ||
@@ -772,7 +771,6 @@ const AdminRiders = () => {
       );
 
     } catch (error) {
-      console.error("Admin riders error:", error);
 
       setError(
         error.response?.data?.detail ||
@@ -802,7 +800,6 @@ const AdminRiders = () => {
       );
 
     } catch (error) {
-      console.error("Admin users error:", error);
 
       alert(
         error.response?.data?.detail ||
@@ -915,10 +912,6 @@ const AdminRiders = () => {
       ]);
 
     } catch (error) {
-      console.error(
-        "Make rider error:",
-        error
-      );
 
       alert(
         error.response?.data?.error ||

@@ -102,7 +102,6 @@ const AdminOrders = () => {
 
       setOrders(uniqueOrders);
     } catch (error) {
-      console.error("Admin orders error:", error);
 
       setError(
         error.response?.data?.detail ||
@@ -128,7 +127,6 @@ const AdminOrders = () => {
 
       setRiders(data.results || data || []);
     } catch (error) {
-      console.error("Available riders error:", error);
 
       setRiders([]);
     } finally {
@@ -203,7 +201,6 @@ const AdminOrders = () => {
 
       alert("Rider assigned successfully.");
     } catch (error) {
-      console.error("Assign rider error:", error);
 
       alert(
         error.response?.data?.error ||
@@ -256,10 +253,6 @@ const AdminOrders = () => {
 
       alert("Order cancelled successfully.");
     } catch (error) {
-      console.error(
-        "Cancel order error:",
-        error
-      );
 
       alert(
         error.response?.data?.error ||

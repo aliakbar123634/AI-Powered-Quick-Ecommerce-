@@ -681,12 +681,7 @@ def shopping_agent(state: AgentState):
         state["messages"]
     ):
 
-        print(i)
-        print(type(message))
-        print(message)
-        print()
 
-    print("=" * 80)
 
     last_message = state["messages"][-1]
 
@@ -701,10 +696,6 @@ def shopping_agent(state: AgentState):
 
     if memory_result:
 
-        print("=" * 60)
-        print("MEMORY RESULT")
-        print(memory_result)
-        print("=" * 60)
 
         if (
             memory_result.should_save
@@ -712,9 +703,6 @@ def shopping_agent(state: AgentState):
             and memory_result.value
         ):
 
-            print("=" * 60)
-            print("SAVING AUTOMATIC MEMORY")
-            print("=" * 60)
 
             save_result = save_memory.invoke(
                 {
@@ -727,13 +715,10 @@ def shopping_agent(state: AgentState):
                 }
             )
 
-            # print(
             #     "Memory save result:"
             # )
 
-            # print(save_result)
 
-            # print("=" * 60)
 
         memory_result = None
 
@@ -753,13 +738,6 @@ def shopping_agent(state: AgentState):
 
         if recall_key:
 
-            print("=" * 60)
-            print("MEMORY RECALL")
-            print(
-                "Key:",
-                recall_key
-            )
-            print("=" * 60)
 
             recall_result = recall_memory.invoke(
                 {
@@ -771,11 +749,7 @@ def shopping_agent(state: AgentState):
                 }
             )
 
-            print(
-                "Recall result:"
-            )
 
-            print(recall_result)
 
             if isinstance(
                 recall_result,
@@ -828,9 +802,6 @@ def shopping_agent(state: AgentState):
         )
     ):
 
-        print("=" * 60)
-        print("STOCK / AVAILABILITY FOLLOW-UP")
-        print("=" * 60)
 
         previous_recommendation = (
             get_previous_recommendation(
@@ -848,9 +819,6 @@ def shopping_agent(state: AgentState):
 
             if stock_response:
 
-                print(
-                    "Returning stock information directly."
-                )
 
                 return {
                     "messages": [
@@ -865,9 +833,6 @@ def shopping_agent(state: AgentState):
         # If we cannot identify the previous products, give a
         # deterministic answer instead of letting the LLM invent
         # queries such as '<product> stock'.
-        print(
-            "Could not identify previous recommended products."
-        )
 
         return {
             "messages": [
@@ -893,9 +858,6 @@ def shopping_agent(state: AgentState):
         and is_knowledge_request(last_message.content)
     ):
 
-        print("=" * 60)
-        print("KNOWLEDGE FLOW")
-        print("=" * 60)
 
         knowledge_result = search_knowledge.invoke(
             {
@@ -903,11 +865,7 @@ def shopping_agent(state: AgentState):
             }
         )
 
-        print("=" * 60)
-        print("KNOWLEDGE RESULT")
-        print("=" * 60)
 
-        print(knowledge_result)
 
         return {
             "messages": [
@@ -975,9 +933,6 @@ def shopping_agent(state: AgentState):
             for word in search_words
         ):
 
-            print("=" * 60)
-            print("DIRECT PRODUCT SEARCH")
-            print("=" * 60)
 
             search_result = search_products.invoke(
                 {
@@ -986,13 +941,7 @@ def shopping_agent(state: AgentState):
                 }
             )
 
-            print(
-                "Search result:"
-            )
 
-            print(
-                search_result
-            )
 
             return {
                 "messages": [
@@ -1044,9 +993,6 @@ def shopping_agent(state: AgentState):
         )
     ):
 
-        print("=" * 60)
-        print("RECOMMENDATION FLOW")
-        print("=" * 60)
 
         token = state.get(
             "access_token",
@@ -1069,13 +1015,7 @@ def shopping_agent(state: AgentState):
             )
         )
 
-        print(
-            "Favorite category result:"
-        )
 
-        print(
-            category_result
-        )
 
         category = None
 
@@ -1097,10 +1037,6 @@ def shopping_agent(state: AgentState):
 
         if category:
 
-            print(
-                "Using favorite category:",
-                category
-            )
 
             recommendation_result = (
                 recommend_products.invoke(
@@ -1113,13 +1049,7 @@ def shopping_agent(state: AgentState):
                 )
             )
 
-            print(
-                "Recommendation result:"
-            )
 
-            print(
-                recommendation_result
-            )
 
             formatted_response = (
                 _format_recommendation_response(
@@ -1159,13 +1089,7 @@ def shopping_agent(state: AgentState):
             )
         )
 
-        print(
-            "Favorite product result:"
-        )
 
-        print(
-            product_result
-        )
 
         favorite_product = None
 
@@ -1187,10 +1111,6 @@ def shopping_agent(state: AgentState):
 
         if favorite_product:
 
-            print(
-                "Using favorite product:",
-                favorite_product
-            )
 
             recommendation_result = (
                 recommend_products.invoke(
@@ -1203,13 +1123,7 @@ def shopping_agent(state: AgentState):
                 )
             )
 
-            print(
-                "Recommendation result:"
-            )
 
-            print(
-                recommendation_result
-            )
 
             formatted_response = (
                 _format_recommendation_response(
@@ -1274,11 +1188,6 @@ def shopping_agent(state: AgentState):
         )
     ):
 
-        print("=" * 60)
-        print(
-            "CART REQUEST → SEARCH PRODUCT"
-        )
-        print("=" * 60)
 
         active_llm = llm.bind_tools(
             [
@@ -1306,12 +1215,6 @@ def shopping_agent(state: AgentState):
             "search_products"
     ):
 
-        print("=" * 60)
-        print(
-            "PRODUCT SEARCH COMPLETE → "
-            "ADD TO CART"
-        )
-        print("=" * 60)
 
         active_llm = llm.bind_tools(
             [
@@ -1349,14 +1252,6 @@ def shopping_agent(state: AgentState):
             "add_to_cart"
     ):
 
-        print("=" * 60)
-        print(
-            "ADD TO CART COMPLETED"
-        )
-        print(
-            "STOPPING TOOL LOOP"
-        )
-        print("=" * 60)
 
         active_llm = llm
 
@@ -1377,10 +1272,6 @@ def shopping_agent(state: AgentState):
             "search_knowledge"
     ):
 
-        print("=" * 60)
-        print("KNOWLEDGE SEARCH COMPLETED")
-        print("STOPPING TOOL LOOP")
-        print("=" * 60)
 
         active_llm = llm
 
@@ -1400,14 +1291,6 @@ def shopping_agent(state: AgentState):
             "recommend_products"
     ):
 
-        print("=" * 60)
-        print(
-            "RECOMMENDATION COMPLETED"
-        )
-        print(
-            "STOPPING TOOL LOOP"
-        )
-        print("=" * 60)
 
         active_llm = llm
 
@@ -1425,11 +1308,6 @@ def shopping_agent(state: AgentState):
     # 8. CALL LLM
     # ========================================================
 
-    print("=" * 80)
-    print(
-        "CALLING LLM"
-    )
-    print("=" * 80)
 
     try:
 
@@ -1439,9 +1317,6 @@ def shopping_agent(state: AgentState):
 
     except Exception as exc:
 
-        print(
-            f"LLM invocation failed: {exc}"
-        )
 
         # ====================================================
         # SEARCH FALLBACK
@@ -1490,10 +1365,6 @@ def shopping_agent(state: AgentState):
 
             except Exception as fallback_error:
 
-                print(
-                    "Fallback parsing failed:",
-                    fallback_error
-                )
 
 
         # ====================================================
@@ -1545,21 +1416,7 @@ def shopping_agent(state: AgentState):
     # 9. DEBUG
     # ========================================================
 
-    print("=" * 50)
-    print(
-        "LLM RESPONSE"
-    )
-    print(response)
-    print("=" * 50)
 
-    print(
-        "Tool Calls:",
-        getattr(
-            response,
-            "tool_calls",
-            []
-        )
-    )
 
 
     # ========================================================

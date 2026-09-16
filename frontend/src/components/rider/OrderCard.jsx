@@ -191,10 +191,6 @@ const OrderCard = ({ order, onRefresh }) => {
 
         } catch (err) {
 
-            console.error(
-                "Rider action error:",
-                err
-            );
 
 
             const message =

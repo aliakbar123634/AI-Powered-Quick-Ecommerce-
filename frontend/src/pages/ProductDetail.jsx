@@ -20,7 +20,6 @@ const ProductDetail = () => {
         const data = await getProductById(id);
         setProduct(data.data);
       } catch (error) {
-        console.log(error);
       }
     };
 
@@ -34,7 +33,6 @@ const ProductDetail = () => {
       })
       alert("Added To Cart");
     }catch(error){
-      console.log(error);
     }
 
   }
@@ -68,7 +66,6 @@ const ProductDetail = () => {
         <ProductInfo
             product={product}
             onAddToCart={(qty) => {
-                console.log(qty);
                 handleAddtoCart();
             }}
         />

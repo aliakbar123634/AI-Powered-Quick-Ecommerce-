@@ -51,7 +51,6 @@ const AdminUsers = () => {
         setUsers([]);
       }
     } catch (err) {
-      console.error("Failed to fetch users:", err);
 
       setError(
         err?.response?.data?.detail ||
@@ -153,7 +152,6 @@ const AdminUsers = () => {
       // Refresh users
       await fetchUsers();
     } catch (err) {
-      console.error("Failed to make rider:", err);
 
       const apiError =
         err?.response?.data?.detail ||

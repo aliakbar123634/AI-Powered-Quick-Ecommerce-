@@ -14,9 +14,7 @@ const CategoryCard = () => {
         const data = await getCategories(page);
         setCategory(data.results);
         // setPage(data.results)
-        console.log(data);
       } catch (error) {
-        console.log("Error fetching category:", error);
       } finally {
         setLoading(false);
       }

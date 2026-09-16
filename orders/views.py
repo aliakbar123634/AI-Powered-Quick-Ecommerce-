@@ -1063,7 +1063,6 @@
 #                 order.status = "CONFIRMED"
 
 #                 order.save()
-#                 print("CREATING DELIVERY TRACKING")
 #                 DeliveryTracking.objects.get_or_create(
 #                     order=order,
 #                     defaults={
@@ -1093,11 +1092,9 @@
 #                    """
 #                 )
 #         except Payment.DoesNotExist:
-#             print(
 #                 "PAYMENT NOT FOUND",session_id)
 #             if event["type"] == "checkout.session.completed":
 
-#                 print("STRIPE PAYMENT COMPLETED EVENT AYA")
 
 
 #     return HttpResponse(
@@ -2511,9 +2508,6 @@ def stripe_webhook(request):
 
                 order.save()
 
-                print(
-                    "CREATING DELIVERY TRACKING"
-                )
 
                 DeliveryTracking.objects.get_or_create(
                     order=order,
@@ -2551,10 +2545,6 @@ Transaction:
 
         except Payment.DoesNotExist:
 
-            print(
-                "PAYMENT NOT FOUND",
-                session_id
-            )
 
     return HttpResponse(
         status=200

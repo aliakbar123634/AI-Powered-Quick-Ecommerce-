@@ -59,5 +59,4 @@ def recommend_products(
         return json.dumps(products, indent=2)
 
     except requests.RequestException as e:
-        print(f"Recommendation API error: {e}")
         return "Backend API is unavailable."

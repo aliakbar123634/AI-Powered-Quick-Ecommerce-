@@ -27,7 +27,6 @@
 
 //                 setOrder(response.data.order);
 //             } catch (error) {
-//                 console.error("Order Success Error:", error);
 
 //                 setError(
 //                     error.response?.data?.error ||
@@ -389,7 +388,6 @@ const OrderSuccess = () => {
                 setLoading(false);
 
             } catch (error) {
-                console.error("Order Success Error:", error);
 
                 setError(
                     error.response?.data?.error ||

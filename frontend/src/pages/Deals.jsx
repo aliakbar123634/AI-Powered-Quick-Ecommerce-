@@ -19,7 +19,6 @@ const Deals = () => {
         try {
             const data = await dealProducts();
 
-            console.log("Deals API:", data);
 
             // Agar pagination hai
             if (data.results) {
@@ -31,7 +30,6 @@ const Deals = () => {
             }
 
         } catch (error) {
-            console.error("Deals API Error:", error);
         } finally {
             setLoading(false);
         }

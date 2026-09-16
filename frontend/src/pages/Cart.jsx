@@ -9,7 +9,6 @@ import CartActions from "../components/CartActions";
 import Footer from "../components/footer/Footer";
 
 const Cart = () => {
-  console.log("CART COMPONENT RENDERED");
   const [cart, setCart] = useState(null); // ❗ CHANGED (array → null)
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
@@ -19,11 +18,9 @@ const handleClearCart = () => {
 const fetchCart = async () => {
   try {
     const data = await allCart();
-    console.log(data.data);
 
     setCart(data.data.results[0]);
   } catch (error) {
-    console.log("Error fetching cart:", error);
   }
 };
 
@@ -45,7 +42,6 @@ const handleIncreaseQuantity = async (productId, currentQty) => {
 
     await fetchCart();
   } catch (error) {
-    console.log(error);
   }
 };  
 
@@ -60,7 +56,6 @@ const handleIncreaseQuantity = async (productId, currentQty) => {
 
     await fetchCart();
   } catch (error) {
-    console.log(error);
   }
 };
 
@@ -72,20 +67,17 @@ const handleIncreaseQuantity = async (productId, currentQty) => {
 
     await fetchCart();
   } catch (error) {
-    console.log(error);
   }
 };
 const handleCreateOrder = async () => {
   try {
     const response = await createOrder();
 
-    console.log(response.data);
 
     setOrder(response.data);
 
     alert("Order Created");
   } catch (error) {
-    console.log(error);
   }
 };
   if (loading) return <h3>Loading...</h3>;

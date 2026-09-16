@@ -98,7 +98,6 @@
 // }catch(error){
 
 
-// console.log(error);
 
 
 // if(error.response){
@@ -357,10 +356,6 @@ const Payment = () => {
 
         } catch (error) {
 
-            console.error(
-                "Payment Error:",
-                error
-            );
 
             alert(
                 error.response?.data?.error ||

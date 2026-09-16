@@ -40,7 +40,6 @@ const CategoryDetail = () => {
 
             const data = await getCategoryProducts(slug);
 
-            console.log(data);
 
             setCategory(data);
 
@@ -50,7 +49,6 @@ const CategoryDetail = () => {
 
         catch (error) {
 
-            console.log(error);
 
         }
 

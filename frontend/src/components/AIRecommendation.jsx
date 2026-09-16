@@ -21,9 +21,7 @@ const AIRecommendation = () => {
 
         setProduct(data.data.results);
 
-        console.log(data.data);
       } catch (error) {
-        console.log(error);
       } finally {
         setLoading(false);
       }

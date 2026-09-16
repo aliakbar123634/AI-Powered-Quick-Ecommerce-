@@ -22,7 +22,6 @@ const OrderDetail = () => {
         const response = await getOrderDetail(id);
         setOrder(response.data);
       } catch (error) {
-        console.log(error);
       } finally {
         setLoading(false);
       }
@@ -42,7 +41,6 @@ const OrderDetail = () => {
       status: "CANCELLED",
     }));
   } catch (error) {
-    console.log(error);
 
     if (error.response) {
       alert(error.response.data.error);

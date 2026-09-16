@@ -72,7 +72,6 @@ const SaveAddress = ({ address, position }) => {
             //     await createAddress(payload);
 
 
-            // console.log(response.data);
 
 
             // alert(
@@ -90,9 +89,6 @@ navigate("/");
 
 
         } catch (error) {
-        console.log(
-           error.response.data
-        );
 
         alert(error.response.data);
         }

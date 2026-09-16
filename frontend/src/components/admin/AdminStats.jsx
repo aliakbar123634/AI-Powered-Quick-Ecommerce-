@@ -202,10 +202,6 @@ const AdminStats = () => {
 
 
       if (failedRequests.length > 0) {
-        console.warn(
-          "Some admin dashboard requests failed:",
-          failedRequests
-        );
       }
 
 
@@ -219,10 +215,6 @@ const AdminStats = () => {
       }
 
     } catch (err) {
-      console.error(
-        "Admin dashboard error:",
-        err
-      );
 
       setError(
         err?.response?.data?.detail ||

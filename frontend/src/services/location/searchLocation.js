@@ -24,7 +24,6 @@ const searchLocation = async (query) => {
 
     } catch (error) {
 
-        console.log(error);
 
         return [];
 

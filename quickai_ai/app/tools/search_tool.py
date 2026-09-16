@@ -113,7 +113,6 @@
 
 #         results = data.get("results", [])
 
-#         print(
 #             "Matching semantic products found:",
 #             len(results)
 #         )

@@ -64,7 +64,6 @@
 
 //       const response = await allCart();
 
-//       console.log("Cart:", response.data);
 
 //       if (
 //         response.data &&
@@ -84,7 +83,6 @@
 
 //     } catch (error) {
 
-//       console.error("Cart fetch error:", error);
 
 //       setCartCount(0);
 
@@ -117,7 +115,6 @@
 
 //     } catch (error) {
 
-//       console.error(
 //         "Default address fetch error:",
 //         error
 //       );
@@ -226,7 +223,6 @@
 
 //       } catch (error) {
 
-//         console.error(
 //           "Navbar product search error:",
 //           error
 //         );
@@ -2083,7 +2079,6 @@ const Navbar = () => {
 
       const response = await allCart();
 
-      console.log("Cart:", response.data);
 
       if (
         response.data &&
@@ -2103,7 +2098,6 @@ const Navbar = () => {
 
     } catch (error) {
 
-      console.error("Cart fetch error:", error);
 
       setCartCount(0);
 
@@ -2136,10 +2130,6 @@ const Navbar = () => {
 
     } catch (error) {
 
-      console.error(
-        "Default address fetch error:",
-        error
-      );
 
     }
 
@@ -2245,10 +2235,6 @@ const Navbar = () => {
 
       } catch (error) {
 
-        console.error(
-          "Navbar product search error:",
-          error
-        );
 
         setSearchResults([]);
 

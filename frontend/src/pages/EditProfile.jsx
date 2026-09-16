@@ -48,7 +48,6 @@ const [formData, setFormData] = useState({
 
         } catch (error) {
 
-            console.log(error);
 
         } finally {
 
@@ -97,7 +96,6 @@ const handleSubmit = async (e) => {
 
         const response = await updateProfile(userId, data);
 
-        console.log(response.data);
 
         alert("Profile Updated Successfully");
 
@@ -105,7 +103,6 @@ const handleSubmit = async (e) => {
 
     } catch (error) {
 
-        console.log(error);
 
     }
 

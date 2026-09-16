@@ -39,7 +39,6 @@ const RelatedProducts = ({ product }) => {
 
     setProducts(relatedProducts);
   } catch (error) {
-    console.log(error);
   }
 };
     if (product) {

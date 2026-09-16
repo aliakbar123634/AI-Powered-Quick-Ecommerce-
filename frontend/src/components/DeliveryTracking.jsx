@@ -21,9 +21,7 @@ const DeliveryTracking = ({ orderId }) => {
       const response = await getDeliveryTracking(orderId);
 
       setDelivery(response.data.results[0]);
-      console.log(response.data.results[0]);
     } catch (error) {
-      console.log(error);
     }
   };
 //   const getStep = () => {

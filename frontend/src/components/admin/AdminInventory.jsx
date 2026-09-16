@@ -76,10 +76,6 @@ const AdminInventory = () => {
           []
       );
     } catch (error) {
-      console.error(
-        "Admin inventory error:",
-        error
-      );
 
       setError(
         error.response?.data?.detail ||
@@ -178,10 +174,6 @@ const AdminInventory = () => {
 
       await fetchInventory();
     } catch (error) {
-      console.error(
-        "Inventory save error:",
-        error
-      );
 
       const backendError =
         error.response?.data;
@@ -228,10 +220,6 @@ const AdminInventory = () => {
 
       await fetchInventory();
     } catch (error) {
-      console.error(
-        "Inventory delete error:",
-        error
-      );
 
       setError(
         error.response?.data?.detail ||

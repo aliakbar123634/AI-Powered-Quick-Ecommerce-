@@ -19,7 +19,6 @@ const Checkout = () => {
     const response = await createOrder({address: selectedAddress.id});
     
 
-    console.log(response.data);
 
     navigate("/payment", {
     state: {
@@ -33,7 +32,6 @@ const Checkout = () => {
       alert("Something went wrong.");
     }
 
-    console.log(error);
   }
 };
 
@@ -58,7 +56,6 @@ const Checkout = () => {
         defaultAddress || addressResponse.data.results[0]
       );
       } catch (error) {
-        console.log(error);
       } finally {
         setLoading(false);
       }

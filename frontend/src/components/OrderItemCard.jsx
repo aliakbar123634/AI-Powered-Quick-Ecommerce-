@@ -19,9 +19,6 @@ const OrderItemCard = ({ item }) => {
         border: "2px solid red",
     }}
           onError={(e) => {
-            console.log("Image Failed");
-            console.log(item.product_image);
-            console.log(e.target.src);
   }}
           className="w-40 h-40 rounded-2xl object-cover border"
         />

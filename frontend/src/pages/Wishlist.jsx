@@ -29,11 +29,9 @@ const Wishlist = () => {
 
       // setWishlist(response.data.results);
       setWishlist(response.data.results);
-      console.log("wishlist", response.data.results);
 
     } catch (error) {
 
-      console.log(error);
 
     } finally {
 
@@ -59,7 +57,6 @@ const Wishlist = () => {
 
     } catch (error) {
 
-      console.log(error);
 
       alert("Failed to remove product.");
 

@@ -15,8 +15,6 @@ const CurrentLocation = ({ setPosition }) => {
 
       (position) => {
 
-        console.log("SUCCESS");
-        console.log(position);
 
         setPosition([
           position.coords.latitude,
@@ -27,9 +25,6 @@ const CurrentLocation = ({ setPosition }) => {
 
       (error) => {
 
-        console.log(error);
-        console.log(error.code);
-        console.log(error.message);
 
         // alert(error.message);
 

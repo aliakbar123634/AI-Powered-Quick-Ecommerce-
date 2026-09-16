@@ -51,7 +51,6 @@ const AdminWarehouses = () => {
 
       setWarehouses(data.results || data || []);
     } catch (error) {
-      console.error("Admin warehouses error:", error);
 
       setError(
         error.response?.data?.detail ||
@@ -146,7 +145,6 @@ const AdminWarehouses = () => {
 
       await fetchWarehouses();
     } catch (error) {
-      console.error("Warehouse save error:", error);
 
       const backendError = error.response?.data;
 
@@ -188,7 +186,6 @@ const AdminWarehouses = () => {
 
       await fetchWarehouses();
     } catch (error) {
-      console.error("Warehouse delete error:", error);
 
       setError(
         error.response?.data?.detail ||
@@ -218,7 +215,6 @@ const AdminWarehouses = () => {
 
       setStock(data.results || data || []);
     } catch (error) {
-      console.error("Warehouse stock error:", error);
 
       setStockError(
         error.response?.data?.detail ||

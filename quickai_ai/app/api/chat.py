@@ -85,8 +85,6 @@ def chat(
         }
     )
 
-    print("FINAL RESPONSE:")
-    print(result["messages"][-1].content)
 
 
     final_response = result["messages"][-1].content
