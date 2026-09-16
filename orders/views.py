@@ -1178,6 +1178,7 @@
 
 
 from ast import Is
+from asyncio.log import logger
 import logging
 from django.shortcuts import render
 from accounts.utils import distance
@@ -2544,6 +2545,10 @@ Transaction:
                 )
 
         except Payment.DoesNotExist:
+            logger.error(
+                "Payment not found for Stripe session: %s",
+                session_id
+            )
 
 
     return HttpResponse(
